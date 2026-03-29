@@ -1,0 +1,526 @@
+<!--
+  ============================================================
+  WladislaW 360° Panorama Gallery — Shopify Embed
+  ============================================================
+
+  HOW TO USE:
+  1. Upload your panorama image to Shopify (Settings > Files)
+  2. Replace PANORAMA_IMAGE_URL below with the Shopify CDN URL
+  3. Upload all 15 painting thumbnails to Shopify Files
+  4. Replace PAINTING_00_URL through PAINTING_14_URL with real URLs
+  5. Paste this entire snippet into a Shopify Custom Page (HTML editor)
+
+  NOTE: Product handles are already set. If your Shopify handles
+  differ, update them in the PAINTINGS array below.
+  ============================================================
+-->
+
+<!-- Pannellum CSS & JS from CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<!-- Google Fonts -->
+<!-- Nimbus Sans lokal gehostet — kein Google Fonts Request für Display-Font nötig -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ── Reset for Shopify embed ── */
+#wlw-gallery *, #wlw-gallery *::before, #wlw-gallery *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Variables ── */
+#wlw-gallery {
+  --pink: #FF3E8E;
+  --yellow: #E8FF00;
+  --bg: #0a0a0a;
+  --bg-overlay: rgba(10, 10, 10, 0.85);
+  --font-display: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  min-height: 500px;
+  max-height: 900px;
+  background: var(--bg);
+  font-family: var(--font-mono);
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+/* ── Pannellum container ── */
+#wlw-panorama {
+  width: 100%;
+  height: 100%;
+}
+
+/* Override Pannellum default styles */
+#wlw-gallery .pnlm-about-msg,
+#wlw-gallery .pnlm-orientation-button,
+#wlw-gallery .pnlm-zoom-controls,
+#wlw-gallery .pnlm-fullscreen-toggle-button-inactive,
+#wlw-gallery .pnlm-hot-spot-debug-indicator {
+  display: none !important;
+}
+
+/* ── Hotspot: Painting Frame ── */
+#wlw-gallery .pnlm-tooltip span {
+  display: none !important;
+}
+
+#wlw-gallery .pf {
+  display: block;
+  width: 120px;
+  height: 90px;
+  background-size: cover;
+  background-position: center;
+  border: 3px solid #fff;
+  border-bottom-width: 22px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative;
+}
+
+#wlw-gallery .pf:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 30px rgba(255, 62, 142, 0.4), 0 0 0 1px var(--pink);
+  border-color: var(--pink);
+}
+
+/* ── Hotspot hover label ── */
+#wlw-gallery .pf-label {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-overlay);
+  border: 1px solid rgba(255, 62, 142, 0.3);
+  border-radius: 4px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#wlw-gallery .pf:hover .pf-label {
+  opacity: 1;
+}
+
+#wlw-gallery .pf-label .pf-title {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  display: block;
+  margin-bottom: 2px;
+}
+
+#wlw-gallery .pf-label .pf-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255,255,255,0.6);
+  display: block;
+}
+
+#wlw-gallery .pf-label .pf-price {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--yellow);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ── HUD: Top branding ── */
+#wlw-hud {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#wlw-hud .wlw-brand {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+#wlw-hud .wlw-subtitle {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--pink);
+  opacity: 0.6;
+  letter-spacing: 1px;
+}
+
+/* ── Hint ── */
+#wlw-hint {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 100;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  animation: wlw-fade-hint 6s ease forwards;
+}
+
+@keyframes wlw-fade-hint {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Bottom thumbnail strip ── */
+#wlw-thumbstrip {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: linear-gradient(transparent, rgba(10,10,10,0.95));
+  padding: 16px 12px 10px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--pink) transparent;
+}
+
+#wlw-thumbstrip::-webkit-scrollbar {
+  height: 3px;
+}
+
+#wlw-thumbstrip::-webkit-scrollbar-thumb {
+  background: var(--pink);
+  border-radius: 2px;
+}
+
+#wlw-thumbstrip a {
+  flex-shrink: 0;
+  display: block;
+  width: 52px;
+  height: 52px;
+  border: 2px solid rgba(255,255,255,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+  text-decoration: none;
+}
+
+#wlw-thumbstrip a:hover {
+  border-color: var(--pink);
+  transform: translateY(-3px);
+}
+
+#wlw-thumbstrip a img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Mobile fallback grid ── */
+#wlw-mobile-grid {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #wlw-gallery {
+    height: auto;
+    min-height: unset;
+    max-height: unset;
+  }
+
+  #wlw-panorama,
+  #wlw-thumbstrip,
+  #wlw-hint {
+    display: none !important;
+  }
+
+  #wlw-hud {
+    position: relative;
+    top: 0;
+    left: 0;
+    padding: 16px;
+    pointer-events: auto;
+    text-align: center;
+  }
+
+  #wlw-hud .wlw-brand {
+    opacity: 1;
+  }
+
+  #wlw-hud .wlw-subtitle {
+    opacity: 1;
+  }
+
+  #wlw-mobile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 8px 16px 24px;
+  }
+
+  #wlw-mobile-grid a {
+    display: block;
+    text-decoration: none;
+    background: #111;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  #wlw-mobile-grid a:hover {
+    border-color: var(--pink);
+  }
+
+  #wlw-mobile-grid a img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+  }
+
+  #wlw-mobile-grid .mg-info {
+    padding: 8px 10px;
+  }
+
+  #wlw-mobile-grid .mg-title {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  #wlw-mobile-grid .mg-meta {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: rgba(255,255,255,0.5);
+    display: block;
+  }
+
+  #wlw-mobile-grid .mg-price {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--yellow);
+    display: block;
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 420px) {
+  #wlw-mobile-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<!-- ════════════════════════════════════════════════════════════
+     GALLERY MARKUP
+     ════════════════════════════════════════════════════════════ -->
+<div id="wlw-gallery">
+
+  <!-- HUD -->
+  <div id="wlw-hud">
+    <div class="wlw-brand">WladislaW</div>
+    <div class="wlw-subtitle">360&deg; Gallery</div>
+  </div>
+
+  <!-- Hint -->
+  <div id="wlw-hint">Click paintings to view &amp; purchase</div>
+
+  <!-- Pannellum viewer (hidden on mobile) -->
+  <div id="wlw-panorama"></div>
+
+  <!-- Bottom thumbnail strip (hidden on mobile) -->
+  <div id="wlw-thumbstrip"></div>
+
+  <!-- Mobile fallback grid (hidden on desktop) -->
+  <div id="wlw-mobile-grid"></div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ──────────────────────────────────────────────
+  // CONFIGURATION — Replace placeholder URLs here
+  // ──────────────────────────────────────────────
+
+  // Step 1: Replace with your panorama image URL from Shopify Files
+  var PANORAMA_URL = 'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/panorama_compressed.jpg?v=1774066495';
+
+  // Painting image URLs from Shopify Files CDN
+  var IMAGE_URLS = [
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_00.jpg?v=1774065825',  // 0: Luchador Mask
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_01.jpg?v=1774065825',  // 1: The Kiss
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_02.jpg?v=1774065825',  // 2: Selbstportrait mit Trommel
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_03.jpg?v=1774065825',  // 3: ВОЛК (Wolf)
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_04.jpg?v=1774065825',  // 4: Purple Figure
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_05.jpg?v=1774065825',  // 5: Pink Faces
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_06.jpg?v=1774065825',  // 6: Dark Portrait
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_07.jpg?v=1774065825',  // 7: Reclining Figure
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_08.jpg?v=1774065825',  // 8: Extended Hand
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_09.jpg?v=1774065825',  // 9: Fist
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_10.jpg?v=1774065825',  // 10: Hand on Black
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_11.jpg?v=1774065825',  // 11: Pink Rabbit
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_12.jpg?v=1774065825',  // 12: Rabbit II
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_13.jpg?v=1774065825',  // 13: Figure on Pink
+    'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_14.jpg?v=1774065825'   // 14: Rabbit on Yellow
+  ];
+
+  // Painting metadata & Shopify product handles
+  var PAINTINGS = [
+    { title: 'Luchador Mask',              size: '80\u00d780 cm',  price: 'CHF 2.400', year: '2019', handle: 'luchador-mask',              pitch: 5, yaw: -172 },
+    { title: 'The Kiss',                   size: '120\u00d760 cm', price: 'CHF 3.800', year: '2021', handle: 'the-kiss',                   pitch: 4, yaw: -160 },
+    { title: 'Selbstportrait mit Trommel', size: '100\u00d7120 cm',price: 'CHF 4.200', year: '2023', handle: 'selbstportrait-mit-trommel', pitch: 5, yaw: -150 },
+    { title: '\u0412\u041e\u041b\u041a (Wolf)',              size: '70\u00d790 cm',  price: 'CHF 2.800', year: '2020', handle: 'volk-wolf',                  pitch: 4, yaw: -140 },
+    { title: 'Purple Figure',              size: '80\u00d7100 cm', price: 'CHF 2.600', year: '2021', handle: 'purple-figure',              pitch: 5, yaw: -130 },
+    { title: 'Pink Faces',                 size: '60\u00d7120 cm', price: 'CHF 3.200', year: '2019', handle: 'pink-faces',                 pitch: 4, yaw: -120 },
+    { title: 'Dark Portrait',              size: '80\u00d780 cm',  price: 'CHF 2.400', year: '2019', handle: 'dark-portrait',              pitch: 5, yaw: -65  },
+    { title: 'Reclining Figure',           size: '80\u00d780 cm',  price: 'CHF 2.400', year: '2020', handle: 'reclining-figure',           pitch: 4, yaw: -55  },
+    { title: 'Extended Hand',              size: '80\u00d780 cm',  price: 'CHF 2.100', year: '2020', handle: 'extended-hand',              pitch: 5, yaw: -37  },
+    { title: 'Fist',                       size: '80\u00d780 cm',  price: 'CHF 2.100', year: '2020', handle: 'fist',                       pitch: 4, yaw: -30  },
+    { title: 'Hand on Black',              size: '80\u00d780 cm',  price: 'CHF 2.400', year: '2019', handle: 'hand-on-black',              pitch: 5, yaw: 35   },
+    { title: 'Pink Rabbit',               size: '60\u00d780 cm',  price: 'CHF 2.200', year: '2021', handle: 'pink-rabbit',               pitch: 5, yaw: 101  },
+    { title: 'Rabbit II',                 size: '60\u00d780 cm',  price: 'CHF 2.200', year: '2021', handle: 'rabbit-ii',                 pitch: 4, yaw: 109  },
+    { title: 'Figure on Pink',            size: '60\u00d780 cm',  price: 'CHF 2.800', year: '2022', handle: 'figure-on-pink',            pitch: 5, yaw: 166  },
+    { title: 'Rabbit on Yellow',          size: '60\u00d780 cm',  price: 'CHF 1.900', year: '2021', handle: 'rabbit-on-yellow',          pitch: 4, yaw: 176  }
+  ];
+
+  // ──────────────────────────────────────────────
+  // Build product URL from handle
+  // ──────────────────────────────────────────────
+  function productUrl(handle) {
+    return '/products/' + handle;
+  }
+
+  // ──────────────────────────────────────────────
+  // Mobile check
+  // ──────────────────────────────────────────────
+  var isMobile = window.innerWidth <= 768;
+
+  // ──────────────────────────────────────────────
+  // Mobile: render grid
+  // ──────────────────────────────────────────────
+  if (isMobile) {
+    var grid = document.getElementById('wlw-mobile-grid');
+    PAINTINGS.forEach(function(p, i) {
+      var a = document.createElement('a');
+      a.href = productUrl(p.handle);
+
+      var img = document.createElement('img');
+      img.src = IMAGE_URLS[i];
+      img.alt = p.title;
+      img.loading = 'lazy';
+      a.appendChild(img);
+
+      var info = document.createElement('div');
+      info.className = 'mg-info';
+      info.innerHTML =
+        '<span class="mg-title">' + p.title + '</span>' +
+        '<span class="mg-meta">' + p.size + ' &middot; ' + p.year + '</span>' +
+        '<span class="mg-price">' + p.price + '</span>';
+      a.appendChild(info);
+
+      grid.appendChild(a);
+    });
+    return; // skip panorama init on mobile
+  }
+
+  // ──────────────────────────────────────────────
+  // Desktop: build hotspots for Pannellum
+  // ──────────────────────────────────────────────
+  var hotspots = PAINTINGS.map(function(p, i) {
+    return {
+      pitch: p.pitch,
+      yaw: p.yaw,
+      type: 'info',
+      cssClass: 'wlw-hs-' + i,
+      createTooltipFunc: function(hotSpotDiv) {
+        // Painting frame element
+        var frame = document.createElement('a');
+        frame.href = productUrl(p.handle);
+        frame.className = 'pf';
+        frame.style.backgroundImage = 'url(' + IMAGE_URLS[i] + ')';
+        frame.title = p.title;
+
+        // Hover label
+        var label = document.createElement('div');
+        label.className = 'pf-label';
+        label.innerHTML =
+          '<span class="pf-title">' + p.title + '</span>' +
+          '<span class="pf-meta">' + p.size + ' &middot; ' + p.year + '</span>' +
+          '<span class="pf-price">' + p.price + '</span>';
+        frame.appendChild(label);
+
+        hotSpotDiv.appendChild(frame);
+      },
+      createTooltipArgs: ''
+    };
+  });
+
+  // ──────────────────────────────────────────────
+  // Init Pannellum
+  // ──────────────────────────────────────────────
+  var viewer = pannellum.viewer('wlw-panorama', {
+    type: 'equirectangular',
+    panorama: PANORAMA_URL,
+    autoLoad: true,
+    showControls: false,
+    showFullscreenCtrl: false,
+    showZoomCtrl: false,
+    mouseZoom: true,
+    keyboardZoom: false,
+    hfov: 110,
+    minHfov: 60,
+    maxHfov: 120,
+    pitch: 0,
+    yaw: 0,
+    autoRotate: -1.5,
+    autoRotateInactivityDelay: 4000,
+    friction: 0.15,
+    hotSpots: hotspots
+  });
+
+  // ──────────────────────────────────────────────
+  // Build thumbnail strip
+  // ──────────────────────────────────────────────
+  var strip = document.getElementById('wlw-thumbstrip');
+  PAINTINGS.forEach(function(p, i) {
+    var a = document.createElement('a');
+    a.href = productUrl(p.handle);
+    a.title = p.title + ' — ' + p.price;
+
+    var img = document.createElement('img');
+    img.src = IMAGE_URLS[i];
+    img.alt = p.title;
+    img.loading = 'lazy';
+    a.appendChild(img);
+
+    strip.appendChild(a);
+  });
+
+})();
+</script>

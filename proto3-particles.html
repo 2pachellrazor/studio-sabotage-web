@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Prototyp 3 — Particle Snakes</title>
+<style>
+  @font-face { font-family: 'Nimbus Sans'; font-weight: 400; src: url('./fonts/NimbusSans-Regular.woff2') format('woff2'); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #fff; overflow: hidden; font-family: 'Nimbus Sans', sans-serif; }
+  canvas#particleBg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 1; }
+  .vignette {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 20% 38% at 50% 48%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 30%, rgba(255,255,255,0.3) 55%, rgba(255,255,255,0.08) 70%, transparent 88%);
+    pointer-events: none; z-index: 2;
+  }
+  /* Wordmark — genau zwischen den Schlangenköpfen */
+  .wordmark {
+    position: fixed; top: 22%; left: 50%; transform: translateX(-50%);
+    color: rgba(0,0,0,0.95); font-size: 1.4rem; letter-spacing: 0.55em;
+    text-transform: uppercase; z-index: 10;
+    white-space: nowrap;
+  }
+
+  /* Center area — logo + CTA */
+  .container { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+  .center-brand { text-align: center; margin-top: 1rem; }
+  .center-brand img.logo { height: 300px; width: auto; margin-bottom: 1.8rem; }
+  .cta {
+    font-size: 1.1rem; letter-spacing: 0.18em; text-transform: uppercase;
+    border: 1px solid rgba(0,0,0,0.15); padding: 0.7rem 2.2rem;
+    background: rgba(255,255,255,0.6); backdrop-filter: blur(8px);
+    color: rgba(0,0,0,0.9); cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .cta:hover {
+    border-color: rgba(245,160,181,0.5);
+    background: rgba(245,160,181,0.08);
+    color: rgba(0,0,0,0.9);
+    box-shadow: 0 0 30px rgba(245,160,181,0.15);
+  }
+
+  /* Tag — größer, schwarz, höher */
+  .tag-bottom {
+    position: fixed; bottom: 12%; left: 50%; transform: translateX(-50%);
+    z-index: 10;
+  }
+  .tag-bottom img { width: 180px; height: auto; opacity: 1; }
+</style>
+</head>
+<body>
+
+<canvas id="particleBg"></canvas>
+<div class="vignette"></div>
+
+<p class="wordmark">Studio Sabotage</p>
+
+<div class="container">
+  <div class="center-brand">
+    <img class="logo" src="./gallery3d/logo.png" alt="S">
+    <p style="color:rgba(0,0,0,0.5); font-size:0.7rem; letter-spacing:0.25em; text-transform:uppercase; margin-bottom:0.5rem;">Parental Advisory — Explicit Content</p>
+    <div class="cta">Enter Anyway</div>
+  </div>
+</div>
+
+<div class="tag-bottom">
+  <img src="./gallery3d/tag.png" alt="tag">
+</div>
+
+<script>
+const canvas = document.getElementById('particleBg');
+const ctx = canvas.getContext('2d');
+let W, H;
+let mouseX = -1000, mouseY = -1000;
+const particles = [];
+const PARTICLE_COUNT = 18000;
+const MOUSE_RADIUS = 80;
+
+function resize() {
+  W = canvas.width = window.innerWidth * 2;
+  H = canvas.height = window.innerHeight * 2;
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+}
+resize();
+window.addEventListener('resize', () => { resize(); sampleImage(); });
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX * 2;
+  mouseY = e.clientY * 2;
+});
+document.addEventListener('mouseleave', () => { mouseX = -1000; mouseY = -1000; });
+
+const img = new Image();
+img.src = './gallery3d/snake-vertical.png?' + Date.now();
+img.onload = sampleImage;
+
+function sampleImage() {
+  if (!img.complete || img.naturalWidth === 0) return;
+
+  const offscreen = document.createElement('canvas');
+  const octx = offscreen.getContext('2d');
+  offscreen.width = W;
+  offscreen.height = H;
+
+  // Match the CSS layout: 96% height, positioned left and right of center
+  const snakeH = H * 0.88;
+  const snakeW = snakeH * (img.naturalWidth / img.naturalHeight);
+  const topY = H * 0.06;
+  const gap = W * 0.14; // wider gap for logo space
+
+  // Right snake — original
+  const rightX = W / 2 + gap / 2;
+  octx.drawImage(img, rightX, topY, snakeW, snakeH);
+
+  // Left snake — mirrored
+  octx.save();
+  octx.translate(W / 2 - gap / 2, topY);
+  octx.scale(-1, 1);
+  octx.drawImage(img, 0, 0, snakeW, snakeH);
+  octx.restore();
+
+  const imageData = octx.getImageData(0, 0, W, H);
+  const darkPixels = [];
+
+  const step = 2;
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      const i = (y * W + x) * 4;
+      const r = imageData.data[i], g = imageData.data[i+1], b = imageData.data[i+2], a = imageData.data[i+3];
+      const brightness = (r + g + b) / 3;
+      if (brightness < 128 && a > 200) {
+        darkPixels.push({ x, y, brightness });
+      }
+    }
+  }
+
+  particles.length = 0;
+  const count = Math.min(PARTICLE_COUNT, darkPixels.length);
+  const shuffled = darkPixels.sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < count; i++) {
+    const p = shuffled[i];
+    const darkness = 1 - p.brightness / 128;
+    const size = darkness * 4 + 1.5;
+    const isLeft = p.x < W / 2;
+
+    particles.push({
+      homeX: p.x,
+      homeY: p.y,
+      // Fly in from the outside edges
+      x: isLeft ? -Math.random() * W * 0.3 : W + Math.random() * W * 0.3,
+      y: p.y + (Math.random() - 0.5) * 200,
+      vx: 0,
+      vy: 0,
+      size: size,
+      alpha: darkness * 0.85 + 0.15, // much more opaque — black
+      phase: p.y * 0.003 + p.x * 0.001,
+      isLeft: isLeft,
+    });
+  }
+}
+
+let frame = 0;
+function animate() {
+  frame++;
+  const t = frame * 0.01;
+  ctx.clearRect(0, 0, W, H);
+
+  for (const p of particles) {
+    // Asymmetric slithering — right snake slightly delayed & different rhythm
+    const timeOffset = p.isLeft ? 0 : 1.8;
+    const speedMult = p.isLeft ? 1.0 : 0.85;
+    const waveX = Math.sin(t * speedMult + p.phase + timeOffset) * 14;
+    const waveY = Math.cos(t * 0.7 * speedMult + p.phase * 1.2 + timeOffset) * 10;
+
+    // Gentle drift — opposing directions
+    const driftX = Math.sin(t * 0.2 + (p.isLeft ? 0 : Math.PI)) * 8;
+    const driftY = Math.sin(t * 0.15 + timeOffset * 0.5) * 5;
+
+    const targetX = p.homeX + waveX + driftX;
+    const targetY = p.homeY + waveY + driftY;
+
+    const dx = targetX - p.x;
+    const dy = targetY - p.y;
+    p.vx += dx * 0.04;
+    p.vy += dy * 0.04;
+
+    // Mouse repulsion
+    const mdx = p.x - mouseX;
+    const mdy = p.y - mouseY;
+    const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+    if (mDist < MOUSE_RADIUS * 2) {
+      const force = (1 - mDist / (MOUSE_RADIUS * 2)) * 16;
+      p.vx += (mdx / mDist) * force;
+      p.vy += (mdy / mDist) * force;
+    }
+
+    p.vx *= 0.9;
+    p.vy *= 0.9;
+    p.x += p.vx;
+    p.y += p.vy;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,0,0,${p.alpha})`;
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>

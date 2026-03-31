@@ -1,0 +1,15 @@
+# Large 3D models (host on Shopify CDN instead)
+merch3d/*.glb
+vault3d/*.glb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# Stitch exports (reference only, not production)
+# stitch_export/

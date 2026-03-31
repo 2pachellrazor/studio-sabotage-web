@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio Sabotage</title>
+<!-- Nimbus Sans lokal gehostet, kein externer Font-Request -->
+<style>
+  @font-face { font-family: 'Nimbus Sans'; font-weight: 400; font-display: swap; src: url('../fonts/NimbusSans-Regular.woff2') format('woff2'); }
+  @font-face { font-family: 'Nimbus Sans'; font-weight: 700; font-display: swap; src: url('../fonts/NimbusSans-Bold.woff2') format('woff2'); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #0a0a0a; font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; }
+  canvas { display: block; }
+
+
+  /* Loading screen */
+  #loading {
+    position: fixed; inset: 0; z-index: 100;
+    background: #f5f5f0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 0.8s ease;
+    overflow: hidden;
+  }
+  #loading::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url('./welcome-bg.png') center/cover no-repeat;
+    opacity: 0.55;
+    transform: translate(var(--parallax-x, 0), var(--parallax-y, 0)) scale(1.05);
+    transition: transform 0.3s ease-out;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse 45% 40% at center, transparent 0%, rgba(0,0,0,0.4) 35%, black 65%);
+    -webkit-mask-image: radial-gradient(ellipse 45% 40% at center, transparent 0%, rgba(0,0,0,0.4) 35%, black 65%);
+  }
+  #loading.hidden { opacity: 0; pointer-events: none; }
+  #loading.fade-enter {
+    pointer-events: none;
+  }
+  #loading.fade-enter > *:not(script) {
+    animation: contentFade 0.4s ease-out forwards;
+  }
+  #loading.fade-enter::before {
+    animation: contentFade 0.5s ease-out forwards;
+  }
+  #loading.fade-enter::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: #0a0a0a;
+    animation: blackFlash 0.7s ease-in-out forwards;
+    z-index: 10;
+  }
+  @keyframes contentFade {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  @keyframes blackFlash {
+    0% { opacity: 0; }
+    40% { opacity: 1; }
+    100% { opacity: 1; }
+  }
+  #loading .bar-track {
+    width: 240px; height: 2px; background: rgba(0,0,0,0.1); border-radius: 1px;
+  }
+  #loading .bar-fill {
+    height: 100%; width: 0%; background: linear-gradient(90deg, rgba(255,62,142,0.3), #FF3E8E, rgba(255,62,142,0.3));
+    border-radius: 1px; transition: width 0.3s ease;
+  }
+  #loading .status {
+    margin-top: 1rem; color: rgba(0,0,0,0.35); font-size: 0.85rem;
+    font-family: monospace;
+  }
+
+  /* Pointer-lock overlay */
+  #overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(245,245,240,0.6);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px;
+    cursor: pointer; transition: opacity 0.4s ease;
+  }
+  #overlay.hidden { opacity: 0; pointer-events: none; }
+  #overlay .resume-text {
+    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    color: rgba(0,0,0,0.7); font-size: 2rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid rgba(0,0,0,0.2);
+    padding: 0.8rem 2.5rem;
+    line-height: 1.2;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.25s ease;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  #overlay .resume-text:hover {
+    color: rgba(0,0,0,0.85);
+    border-color: rgba(0,0,0,0.4);
+    background: rgba(255,255,255,0.08);
+  }
+
+  /* Crosshair */
+  #crosshair {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 40; pointer-events: none;
+  }
+  #crosshair::before, #crosshair::after {
+    content: ''; position: absolute;
+    background: rgba(0,0,0,0.4);
+  }
+  #crosshair::before {
+    width: 16px; height: 1.5px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  #crosshair::after {
+    width: 1.5px; height: 16px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Painting info overlay */
+  #painting-info {
+    position: fixed; bottom: 80px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 40; pointer-events: none;
+    text-align: center;
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  #painting-info.visible { opacity: 1; }
+  #painting-info .title {
+    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    color: rgba(0,0,0,0.85); font-size: 1.2rem;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 12px rgba(255,255,255,0.8), 0 0 24px rgba(255,255,255,0.4);
+  }
+  #painting-info .price {
+    color: #E8FF00; font-size: 0.95rem;
+    margin-top: 0.3rem;
+    font-family: monospace;
+  }
+  #painting-info .hint {
+    color: #888; font-size: 0.75rem;
+    margin-top: 0.25rem;
+    font-family: monospace;
+  }
+
+  @keyframes teleportPulse {
+    0%   { width: 6px; height: 6px; opacity: 1; border-width: 3px; }
+    100% { width: 40px; height: 40px; opacity: 0; border-width: 1px; }
+  }
+
+  /* Gallery Header */
+  #gallery-header {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 160;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 36px;
+    background: linear-gradient(to bottom, rgba(245,245,240,0.7) 0%, rgba(245,245,240,0.2) 60%, transparent 100%);
+    pointer-events: none;
+    opacity: 0; transition: opacity 0.4s ease;
+    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  }
+  #gallery-header.visible { opacity: 1; }
+  #gallery-header a, #gallery-header span {
+    pointer-events: auto;
+  }
+  #gallery-header .header-logo {
+    font-size: 0.85rem; font-weight: 400; color: rgba(0,0,0,0.85);
+    letter-spacing: 0.3em; text-decoration: none;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 14px;
+  }
+  #gallery-header .header-logo:hover {
+    color: #FF3E8E;
+  }
+  #gallery-header nav {
+    display: flex; gap: 28px; align-items: center;
+  }
+  #gallery-header nav a {
+    color: rgba(0,0,0,0.65); text-decoration: none;
+    font-size: 0.75rem; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
+    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-weight: 400;
+  }
+  #gallery-header nav a:hover { color: rgba(0,0,0,0.85); }
+  #gallery-header nav a.active { color: #d4326f; }
+  #gallery-header nav a.ig-link {
+    display: flex; align-items: center; gap: 4px;
+  }
+  #gallery-header nav a.ig-link svg {
+    width: 16px; height: 16px; fill: currentColor;
+  }
+</style>
+</head>
+<body>
+
+<!-- Gallery Header -->
+<div id="gallery-header">
+  <a href="#" class="header-logo">
+    <img src="./logo.png" style="height:65px; width:auto; opacity:0.9;" alt="S"><span style="font-size:0.85rem; letter-spacing:0.45em;">Studio Sabotage</span>
+  </a>
+  <nav>
+    <a href="#" class="active">Gallery</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="#" onclick="return false;" style="opacity:0.5; cursor:default;">Merch</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="#" onclick="return false;" style="opacity:0.5; cursor:default;">About</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="https://instagram.com/babydonthvrtme" target="_blank" class="ig-link">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+    </a>
+  </nav>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to top, rgba(255,62,142,0.16) 0%, transparent 70%); pointer-events:none;"></div>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg, transparent, rgba(255,62,142,0.3), transparent);"></div>
+  <img id="header-flash" src="./header-flash.png" style="display:none; position:absolute; top:30px; left:50%; transform:translateX(-50%); width:90%; opacity:0; transition:opacity 0.3s ease; pointer-events:none; z-index:61;" alt="">
+</div>
+
+<!-- Loading screen -->
+<div id="loading">
+  <div style="display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; margin-top:-3rem;">
+
+    <!-- Center: Brand Block -->
+    <div id="brand-block" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:1.5rem 2rem; border-radius:8px; transition: all 0.3s ease;">
+      <p style="color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:0.7rem; letter-spacing:0.25em; text-transform:uppercase; margin-bottom:1.2rem;">Studio Sabotage</p>
+      <canvas id="logo3d" width="380" height="632" style="width:190px; height:316px; margin-bottom:0.8rem;"></canvas>
+      <script>
+      (function(){
+        const canvas = document.getElementById('logo3d');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.src = './logo.png';
+        img.onload = function() {
+          const W = canvas.width, H = canvas.height;
+          const depth = 12;
+          let angle = 0;
+          function draw() {
+            ctx.clearRect(0, 0, W, H);
+            const absScalePrev = Math.abs(Math.cos(angle));
+            const edgeBoost = 1 + 6 * Math.pow(1 - absScalePrev, 2);
+            angle += 0.008 * edgeBoost;
+            const scale = Math.cos(angle);
+            const absScale = Math.abs(scale);
+            const centerX = W / 2;
+            const imgW = W * 0.85;
+            const imgH = H * 0.85;
+            const offsetX = centerX - (imgW * absScale) / 2;
+            const offsetY = (H - imgH) / 2;
+            const edgeCount = Math.floor(depth * (1 - absScale));
+            for (let i = edgeCount; i > 0; i--) {
+              ctx.globalAlpha = 0.15;
+              ctx.drawImage(img, offsetX + i * 0.5, offsetY + i * 0.3, imgW * absScale, imgH);
+            }
+            ctx.globalAlpha = 1.0;
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(absScale, 1);
+            ctx.drawImage(img, 0, 0, imgW, imgH);
+            ctx.restore();
+            requestAnimationFrame(draw);
+          }
+          draw();
+        };
+      })();
+      </script>
+      <img src="./tag.png" style="width:147px; height:auto; opacity:0.85;" alt="tag">
+    </div>
+
+    <!-- CTA as one line below brand block -->
+    <p id="cta-line" style="color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:2rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.25s ease; margin-top:0.5rem; text-align:center; border:1px solid rgba(255,62,142,0.4); padding:0.8rem 2.5rem; line-height:1.2; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); background:rgba(255,62,142,0.05); box-shadow:0 0 20px rgba(255,62,142,0.08);"><span id="cta-left">Click to </span> <span id="cta-right">Come in, Bitches.</span></p>
+  </div>
+
+  <div class="bar-track"><div class="bar-fill" id="load-bar"></div></div>
+  <div class="status" id="load-status">initializing...</div>
+</div>
+
+<!-- Resume overlay (shows after ESC) -->
+<div id="overlay" class="hidden">
+  <span class="resume-text">Click to resume, motherfucker</span>
+</div>
+
+<!-- Crosshair -->
+<div id="crosshair" style="display:none;"></div>
+
+<!-- Controls hint (visible during pointer lock) -->
+<div id="controls-hint" style="display:none; position:fixed; bottom:28px; left:50%; transform:translateX(-50%); z-index:50; pointer-events:none; text-align:center;">
+  <span style="color:rgba(255,62,142,0.7); font-size:0.85rem; font-family:monospace; letter-spacing:0.12em; text-transform:uppercase;">WASD move · Double-click teleport · Click painting to buy · ESC exit</span>
+</div>
+
+<!-- Teleport indicator -->
+<div id="teleport-ring" style="display:none; position:fixed; pointer-events:none; z-index:35; width:20px; height:20px; border:2px solid #FF3E8E; border-radius:50%; transform:translate(-50%,-50%); animation: teleportPulse 0.4s ease-out forwards;"></div>
+
+<!-- Painting info -->
+<div id="painting-info">
+  <div class="title" id="info-title"></div>
+  <div class="price" id="info-price"></div>
+  <div class="hint">click to view</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// ─── Painting metadata ───────────────────────────────────────────────
+// Real dimensions from originals (width × height in cm)
+const PAINTINGS = [
+  { handle: 'luchador-mask',               title: 'Luchador Mask',              price: '', w: 80,  h: 80  },
+  { handle: 'the-kiss',                    title: 'The Kiss',                   price: '', w: 120, h: 60  },
+  { handle: 'selbstportrait-mit-trommel',  title: 'Selbstportrait mit Trommel', price: '', w: 100, h: 120 },
+  { handle: 'volk-wolf',                   title: 'Volk / Wolf',               price: '', w: 70,  h: 90  },
+  { handle: 'purple-figure',               title: 'Purple Figure',             price: '', w: 80,  h: 100 },
+  { handle: 'pink-faces',                  title: 'Pink Faces',                price: '', w: 60,  h: 120 },
+  { handle: 'dark-portrait',               title: 'Dark Portrait',             price: '', w: 80,  h: 80  },
+  { handle: 'reclining-figure',            title: 'Reclining Figure',          price: '', w: 80,  h: 80  },
+  { handle: 'extended-hand',               title: 'Extended Hand',             price: '', w: 80,  h: 80  },
+  { handle: 'fist',                        title: 'Fist',                      price: '', w: 80,  h: 80  },
+  { handle: 'hand-on-black',               title: 'Hand on Black',             price: '', w: 80,  h: 80  },
+  { handle: 'pink-rabbit',                 title: 'Pink Rabbit',               price: '', w: 60,  h: 80  },
+  { handle: 'rabbit-ii',                   title: 'Rabbit II',                 price: '', w: 60,  h: 80  },
+  { handle: 'figure-on-pink',              title: 'Figure on Pink',            price: '', w: 60,  h: 80  },
+  { handle: 'rabbit-on-yellow',            title: 'Rabbit on Yellow',          price: '', w: 60,  h: 80  },
+];
+
+const CDN_BASE = 'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/';
+const CDN_SUFFIX = '?v=1774065825';
+
+// ─── DOM refs ────────────────────────────────────────────────────────
+const loadingEl   = document.getElementById('loading');
+const loadBar     = document.getElementById('load-bar');
+const loadStatus  = document.getElementById('load-status');
+const overlayEl   = document.getElementById('overlay');
+const crosshairEl = document.getElementById('crosshair');
+const infoEl      = document.getElementById('painting-info');
+const infoTitle   = document.getElementById('info-title');
+const infoPrice   = document.getElementById('info-price');
+
+// ─── Three.js basics ─────────────────────────────────────────────────
+const scene    = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0a);
+
+const camera   = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+// Start in center of room, facing along long axis (-x toward far end)
+camera.position.set(2, 1.7, 0);
+camera.lookAt(-5, 1.7, 0);
+
+// Room boundaries for collision (keep player inside walls)
+const ROOM_BOUNDS = { xMin: -9.5, xMax: 9.5, zMin: -5.5, zMax: 5.5 };
+
+// ─── Internal wall collision (partition wall) ────────────────────────
+// The GLB has a partition wall roughly at x=0, from z=-2.5 to z=2.5
+// Player must walk around it, not through it.
+const INTERNAL_WALLS = [
+  // Partition wall at x≈4.0 (3.85 to 4.15)
+  { xMin: 3.8, xMax: 4.2, zMin: -3.0, zMax: 3.0 },
+];
+
+function clampToWalls(pos, prevPos) {
+  for (const wall of INTERNAL_WALLS) {
+    // Check if new position is inside wall
+    if (pos.x > wall.xMin && pos.x < wall.xMax && pos.z > wall.zMin && pos.z < wall.zMax) {
+      // Push out along the shortest axis
+      const dxLeft  = pos.x - wall.xMin;
+      const dxRight = wall.xMax - pos.x;
+      const dzBack  = pos.z - wall.zMin;
+      const dzFront = wall.zMax - pos.z;
+      const minD = Math.min(dxLeft, dxRight, dzBack, dzFront);
+
+      if (minD === dxLeft)       pos.x = wall.xMin;
+      else if (minD === dxRight) pos.x = wall.xMax;
+      else if (minD === dzBack)  pos.z = wall.zMin;
+      else                       pos.z = wall.zMax;
+    }
+  }
+}
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.9;
+document.body.appendChild(renderer.domElement);
+
+// ─── Lighting ────────────────────────────────────────────────────────
+const ambient = new THREE.AmbientLight(0xffeedd, 0.9);
+scene.add(ambient);
+
+// Hemisphere light for natural fill
+const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+scene.add(hemi);
+
+// Directional light from above (simulating skylight)
+const skyLight = new THREE.DirectionalLight(0xffffff, 0.8);
+skyLight.position.set(0, 10, 0);
+scene.add(skyLight);
+
+// Secondary directional for even fill
+const fillLight = new THREE.DirectionalLight(0xffeedd, 0.3);
+fillLight.position.set(5, 8, 3);
+scene.add(fillLight);
+
+// ─── Raycaster ───────────────────────────────────────────────────────
+const raycaster = new THREE.Raycaster();
+raycaster.far = 8; // only detect nearby paintings
+const screenCenter = new THREE.Vector2(0, 0);
+const paintingMeshes = []; // will hold { mesh, index }
+
+// ─── Load GLB model ──────────────────────────────────────────────────
+const gltfLoader = new GLTFLoader();
+let galleryLoaded = false;
+
+function updateLoading(pct, msg) {
+  loadBar.style.width = pct + '%';
+  loadStatus.textContent = msg;
+}
+
+updateLoading(5, 'loading gallery model...');
+
+gltfLoader.load(
+  './gallery.glb',
+  (gltf) => {
+    scene.add(gltf.scene);
+    galleryLoaded = true;
+    updateLoading(50, 'model loaded, loading paintings...');
+    loadPaintings();
+  },
+  (progress) => {
+    if (progress.total > 0) {
+      const pct = Math.min(45, (progress.loaded / progress.total) * 45);
+      updateLoading(5 + pct, 'loading gallery model...');
+    }
+  },
+  (err) => {
+    console.warn('GLB load failed, continuing without model:', err);
+    updateLoading(50, 'no model found, loading paintings...');
+    // Add a simple floor plane as fallback
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0x1a1a1a })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
+    loadPaintings();
+  }
+);
+
+// ─── Load paintings ──────────────────────────────────────────────────
+const textureLoader = new THREE.TextureLoader();
+
+function loadPaintings() {
+  let loaded = 0;
+  const total = PAINTINGS.length;
+
+  PAINTINGS.forEach((p, i) => {
+    const url = `${CDN_BASE}painting_${String(i).padStart(2, '0')}.jpg${CDN_SUFFIX}`;
+
+    textureLoader.load(url, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      createPaintingMesh(tex, i);
+      loaded++;
+      const pct = 50 + (loaded / total) * 45;
+      updateLoading(pct, `paintings ${loaded}/${total}`);
+      if (loaded === total) finishLoading();
+    }, undefined, () => {
+      // On error, still create a dark placeholder
+      createPaintingMesh(null, i);
+      loaded++;
+      if (loaded === total) finishLoading();
+    });
+  });
+}
+
+function createPaintingMesh(texture, index) {
+  const scale = 1.5 / 100;
+  const pw = PAINTINGS[index].w * scale;
+  const ph = PAINTINGS[index].h * scale;
+
+  const group = new THREE.Group();
+
+  // Frame profile layers (outside → inside):
+  // 1. Outer molding — wide, raised, antique gold
+  // 2. Cove — thin recessed dark channel
+  // 3. Middle flat — warm gold, main body
+  // 4. Inner lip — thin raised bright gold
+  // 5. Liner — dark recess right around canvas
+  const outerFW = 0.06;
+  const coveW = 0.007;
+  const midW = 0.035;
+  const innerW = 0.01;
+  const linerW = 0.005;
+  const totalFrameW = outerFW + coveW + midW + innerW + linerW;
+
+  const outerD = 0.10;
+  const coveD = 0.04;
+  const midD = 0.075;
+  const innerD = 0.09;
+  const linerD = 0.03;
+  const canvasZ = 0.05;
+
+  // Materials — antique gold palette
+  const outerMat = new THREE.MeshStandardMaterial({ color: 0x8B7332, roughness: 0.35, metalness: 0.55 });
+  const coveMat = new THREE.MeshStandardMaterial({ color: 0x2a2210, roughness: 0.7, metalness: 0.2 });
+  const midMat = new THREE.MeshStandardMaterial({ color: 0xB8960B, roughness: 0.25, metalness: 0.65 });
+  const innerMat = new THREE.MeshStandardMaterial({ color: 0xC9A830, roughness: 0.2, metalness: 0.7 });
+  const linerMat = new THREE.MeshStandardMaterial({ color: 0x1a1510, roughness: 0.8, metalness: 0.05 });
+
+  // Back panel
+  const backGeo = new THREE.PlaneGeometry(pw + totalFrameW * 2, ph + totalFrameW * 2);
+  const backMesh = new THREE.Mesh(backGeo, new THREE.MeshStandardMaterial({ color: 0x0a0a08 }));
+  group.add(backMesh);
+
+  // Helper: 4 bars forming one frame layer
+  function addLayer(halfW, halfH, w, d, mat) {
+    const fullW = (halfW + w) * 2;
+    const top = new THREE.Mesh(new THREE.BoxGeometry(fullW, w, d), mat);
+    top.position.set(0, halfH + w / 2, d / 2);
+    group.add(top);
+    const bot = new THREE.Mesh(new THREE.BoxGeometry(fullW, w, d), mat);
+    bot.position.set(0, -halfH - w / 2, d / 2);
+    group.add(bot);
+    const left = new THREE.Mesh(new THREE.BoxGeometry(w, halfH * 2, d), mat);
+    left.position.set(-halfW - w / 2, 0, d / 2);
+    group.add(left);
+    const right = new THREE.Mesh(new THREE.BoxGeometry(w, halfH * 2, d), mat);
+    right.position.set(halfW + w / 2, 0, d / 2);
+    group.add(right);
+  }
+
+  // Build layers inside → out
+  let hW = pw / 2, hH = ph / 2;
+  addLayer(hW, hH, linerW, linerD, linerMat); hW += linerW; hH += linerW;
+  addLayer(hW, hH, innerW, innerD, innerMat); hW += innerW; hH += innerW;
+  addLayer(hW, hH, midW, midD, midMat);       hW += midW;   hH += midW;
+  addLayer(hW, hH, coveW, coveD, coveMat);    hW += coveW;  hH += coveW;
+  addLayer(hW, hH, outerFW, outerD, outerMat);
+
+  // Corner ornament blocks — raised squares at each corner
+  const cornerSize = outerFW + coveW;
+  const cornerD = outerD + 0.018;
+  const cornerMat = new THREE.MeshStandardMaterial({ color: 0xA68B20, roughness: 0.28, metalness: 0.6 });
+  const cornerGeo = new THREE.BoxGeometry(cornerSize, cornerSize, cornerD);
+  const cX = pw / 2 + linerW + innerW + midW + coveW + outerFW / 2;
+  const cY = ph / 2 + linerW + innerW + midW + coveW + outerFW / 2;
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx, sy]) => {
+    const c = new THREE.Mesh(cornerGeo, cornerMat);
+    c.position.set(sx * cX, sy * cY, cornerD / 2);
+    group.add(c);
+  });
+
+  // Canvas
+  const paintGeo = new THREE.PlaneGeometry(pw, ph);
+  const paintMat = texture
+    ? new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85, metalness: 0.0 })
+    : new THREE.MeshStandardMaterial({ color: 0x333333 });
+  const paintMesh = new THREE.Mesh(paintGeo, paintMat);
+  paintMesh.position.z = canvasZ;
+  group.add(paintMesh);
+
+  // Position paintings on the actual walls of the GLB gallery model
+  // Room bounds: X [-11.5, +10.0], Z [-6.0, +6.0], Y [0, 7.0]
+  // Long walls run along X-axis at Z = ±6.0
+  // Short end walls at X ≈ -10.0 and X ≈ +10.0
+  //
+  // Layout: wall Z=-6 (7 paintings), wall Z=+6 (6 paintings), end walls (2 paintings)
+
+  const paintingY = 1.8;        // center of painting near eye level (1.7m)
+  const wallOffset = 0.08;      // distance from wall surface (avoid z-fighting)
+
+  // All 15 paintings on the two long walls (z=±6), no end walls (windows there)
+  // Wall A (z=-6): paintings 0–7, face +z — avoiding pillars at x≈-6, x≈-1.8, x≈0
+  const wallA_x = [-8.0, -5.6, -3.2, -0.8, 1.6, 4.0, 6.0, 8.0];
+  // Wall B (z=+6): paintings 8–14, face -z — evenly spaced
+  const wallB_x = [-7.5, -4.8, -2.1, 0.6, 3.3, 5.7, 8.0];
+
+  if (index <= 7) {
+    group.position.set(wallA_x[index], paintingY, -6.0 + wallOffset);
+    group.rotation.y = 0; // face +z (into room)
+  } else {
+    const ri = index - 8;
+    group.position.set(wallB_x[ri], paintingY, 6.0 - wallOffset);
+    group.rotation.y = Math.PI; // face -z (into room)
+  }
+
+  // Spotlight aimed at each painting
+  const spot = new THREE.SpotLight(0xffffff, 2.0, 10, Math.PI / 6, 0.5, 1);
+  // Light comes from above and slightly in front of painting
+  const lightOffset = new THREE.Vector3(0, 3.0, 0);
+  spot.position.copy(group.position).add(lightOffset);
+  spot.target = group;
+  scene.add(spot);
+
+  scene.add(group);
+
+  // Store for raycasting — we raycast against the painting mesh
+  paintMesh.userData = { paintingIndex: index };
+  paintingMeshes.push(paintMesh);
+}
+
+function finishLoading() {
+  updateLoading(100, 'ready');
+  loadGraffiti();
+  const loadStatus = document.getElementById('load-status');
+  loadStatus.style.display = 'none';
+  document.querySelector('.bar-track').style.display = 'none';
+  loadingEl.style.cursor = 'pointer';
+
+  // Brand block hover glow
+  const brandBlock = document.getElementById('brand-block');
+  brandBlock.addEventListener('mouseenter', () => {
+    brandBlock.style.background = 'rgba(255,62,142,0.06)';
+    brandBlock.style.boxShadow = '0 0 40px rgba(255,62,142,0.12)';
+  });
+  brandBlock.addEventListener('mouseleave', () => {
+    brandBlock.style.background = 'none';
+    brandBlock.style.boxShadow = 'none';
+  });
+
+  // CTA line hover — pink glow
+  const ctaLine = document.getElementById('cta-line');
+  ctaLine.addEventListener('mouseenter', () => {
+    ctaLine.style.background = 'rgba(255,62,142,0.15)';
+    ctaLine.style.borderColor = 'rgba(255,62,142,0.5)';
+    ctaLine.style.boxShadow = '0 0 30px rgba(255,62,142,0.2)';
+  });
+  ctaLine.addEventListener('mouseleave', () => {
+    ctaLine.style.background = 'rgba(255,62,142,0.05)';
+    ctaLine.style.borderColor = 'rgba(255,62,142,0.4)';
+    ctaLine.style.boxShadow = '0 0 20px rgba(255,62,142,0.08)';
+  });
+
+  // Click anywhere to enter
+  let entered = false;
+  loadingEl.addEventListener('click', () => {
+    if (entered) return;
+    entered = true;
+    loadingEl.classList.add('fade-enter');
+    setTimeout(() => {
+      loadingEl.style.display = 'none';
+      headerEl.classList.add('visible');
+      renderer.domElement.requestPointerLock();
+
+      // Header flash — reload GIF to restart animation, show briefly
+      const flash = document.getElementById('header-flash');
+      flash.style.display = 'block';
+      flash.src = './header-flash.png?' + Date.now(); // force restart APNG
+      flash.style.opacity = '0.9';
+      setTimeout(() => {
+        flash.style.opacity = '0';
+        setTimeout(() => { flash.style.display = 'none'; }, 300);
+      }, 1200);
+    }, 700);
+  });
+
+  // Mouse parallax on background artwork
+  loadingEl.addEventListener('mousemove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 20;
+    const y = (e.clientY / window.innerHeight - 0.5) * 20;
+    loadingEl.style.setProperty('--parallax-x', x + 'px');
+    loadingEl.style.setProperty('--parallax-y', y + 'px');
+  });
+}
+
+// ─── Graffiti Hall of Fame — Custom Multiply Shader ───────────────────
+// Graffiti blends INTO the wall surface like real spray paint
+function loadGraffiti() {
+  // Custom vertex + fragment shader for multiply-blend effect
+  const graffitiVertexShader = `
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
+    varying vec3 vNormal;
+    void main() {
+      vUv = uv;
+      vNormal = normalize(normalMatrix * normal);
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      vWorldPos = wp.xyz;
+      gl_Position = projectionMatrix * viewMatrix * wp;
+    }
+  `;
+
+  const graffitiFragmentShader = `
+    uniform sampler2D graffitiTex;
+    uniform float uOpacity;
+    varying vec2 vUv;
+    varying vec3 vWorldPos;
+    varying vec3 vNormal;
+
+    // Simple noise for edge roughness
+    float hash(vec2 p) {
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+    float noise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      f = f * f * (3.0 - 2.0 * f);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    }
+
+    void main() {
+      vec4 texel = texture2D(graffitiTex, vUv);
+
+      // Noise-based edge breakup — makes clean alpha edges look like spray paint
+      float edgeNoise = noise(vUv * 80.0) * 0.3 + noise(vUv * 200.0) * 0.15;
+      float alpha = texel.a;
+      // Roughen edges: where alpha is transitioning (0.2-0.8), add noise
+      if (alpha > 0.1 && alpha < 0.9) {
+        alpha = alpha + edgeNoise - 0.15;
+      }
+      // Also roughen hard edges slightly
+      if (alpha > 0.85) {
+        float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
+        if (edgeDist < 0.02) {
+          alpha *= (0.7 + edgeNoise);
+        }
+      }
+      alpha = clamp(alpha, 0.0, 1.0);
+
+      // Discard fully transparent
+      if (alpha < 0.15) discard;
+
+      // === White/light background removal — hard discard, no semi-transparency ===
+      float brightness = (texel.r + texel.g + texel.b) / 3.0;
+      float maxC = max(max(texel.r, texel.g), texel.b);
+      float minC = min(min(texel.r, texel.g), texel.b);
+      float saturation = maxC - minC;
+      // Discard near-white and light blue backgrounds completely
+      if (brightness > 0.82 && saturation < 0.18) discard;
+
+      // Wall color approximation (light gallery wall)
+      vec3 wallColor = vec3(0.92, 0.90, 0.88);
+
+      // Simple directional lighting
+      vec3 lightDir = normalize(vec3(0.0, 1.0, 0.5));
+      float diff = max(dot(vNormal, lightDir), 0.0) * 0.3 + 0.7;
+
+      // Soft multiply: mix between pure graffiti and multiply-blended
+      vec3 multiplyColor = texel.rgb * wallColor;
+      vec3 grafColor = mix(multiplyColor, texel.rgb, 0.5) * diff * 1.4;
+
+      // Final alpha: paint opacity with slight wall bleed
+      float finalAlpha = alpha * uOpacity;
+
+      gl_FragColor = vec4(grafColor, finalAlpha);
+    }
+  `;
+
+  // ─── HALL OF FAME — Stirnwand x=+10 ──────────────────────────────────
+  // FULL WALL, tight, wild. Top row goes OVER bordüre for raw street feel.
+  // Wall: z=-5.5 to +5.5 (11m). Bottom at y=0.5, top can go to y=4.0+
+  const endX = 9.95;
+  const endRotY = -Math.PI / 2;
+  const graffitiPlacements = [
+    // 11 unique pieces, bigger and more spread out
+    // === TOP — over bordüre ===
+    { file: CDN_BASE + 'graffiti_hof_1.png' + CDN_SUFFIX,   x: 9.99, y: 3.4, z: -3.5, w: 4.5, rotY: endRotY, order: 1 },
+    { file: CDN_BASE + 'graffiti_hof_4.png' + CDN_SUFFIX,   x: 9.98, y: 3.6, z:  1.0, w: 4.2, rotY: endRotY, order: 3 },
+    { file: CDN_BASE + 'graffiti_piece_5.png' + CDN_SUFFIX, x: 9.97, y: 3.2, z:  4.5, w: 4.0, rotY: endRotY, order: 5 },
+    // === MIDDLE — main row ===
+    { file: CDN_BASE + 'graffiti_piece_1.png' + CDN_SUFFIX, x: 9.96, y: 2.0, z: -3.5, w: 4.5, rotY: endRotY, order: 6 },
+    { file: CDN_BASE + 'graffiti_piece_4.png' + CDN_SUFFIX, x: 9.955, y: 2.2, z:  0.8, w: 4.2, rotY: endRotY, order: 7 },
+    { file: CDN_BASE + 'graffiti_hof_3.png' + CDN_SUFFIX,   x: 9.95, y: 1.9, z:  4.0, w: 4.5, rotY: endRotY, order: 8 },
+    // === LOWER — above floor ===
+    { file: CDN_BASE + 'graffiti_hof_2.png' + CDN_SUFFIX,   x: 9.945, y: 1.0, z: -3.0, w: 4.0, rotY: endRotY, order: 10 },
+    { file: CDN_BASE + 'graffiti_piece_3.png' + CDN_SUFFIX, x: 9.985, y: 2.6, z:  0.0, w: 3.5, rotY: endRotY, order: 2 },
+    { file: CDN_BASE + 'graffiti_hof_5.png' + CDN_SUFFIX,   x: 9.94, y: 1.1, z:  2.0, w: 3.8, rotY: endRotY, order: 9 },
+    { file: CDN_BASE + 'graffiti_piece_2.png' + CDN_SUFFIX, x: 9.935, y: 1.2, z:  4.2, w: 3.5, rotY: endRotY, order: 11 },
+    { file: CDN_BASE + 'graffiti_hof_6.png' + CDN_SUFFIX,   x: 9.96, y: 1.0, z: -0.5, w: 3.2, rotY: endRotY, order: 12 },
+  ];
+
+  graffitiPlacements.forEach(g => {
+    textureLoader.load(g.file, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const aspect = tex.image.height / tex.image.width;
+      const gw = g.w;
+      const gh = gw * aspect;
+
+      const geo = new THREE.PlaneGeometry(gw, gh);
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          graffitiTex: { value: tex },
+          uOpacity: { value: 0.88 },
+        },
+        vertexShader: graffitiVertexShader,
+        fragmentShader: graffitiFragmentShader,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(g.x, g.y, g.z);
+      mesh.rotation.y = g.rotY;
+      mesh.renderOrder = g.order || 0;
+      scene.add(mesh);
+    });
+  });
+}
+
+// ─── Branding on Partition Walls ─────────────────────────────────────
+// Layout (top to bottom): "STUDIO SABOTAGE" text → Logo → Tag
+// Placed on BOTH sides of the divider wall
+
+function createBranding(wallX, facingRotation) {
+  const textureLoader2 = new THREE.TextureLoader();
+  const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+  // 1. "STUDIO SABOTAGE" — canvas-rendered text (resolution-independent, always crisp)
+  const textCanvas = document.createElement('canvas');
+  textCanvas.width = 2048;
+  textCanvas.height = 256;
+  const tctx = textCanvas.getContext('2d');
+  tctx.clearRect(0, 0, textCanvas.width, textCanvas.height);
+  tctx.fillStyle = '#000000';
+  tctx.font = '800 112px "Nimbus Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif';
+  tctx.textAlign = 'center';
+  tctx.textBaseline = 'middle';
+  tctx.letterSpacing = '12px';
+  tctx.fillText('STUDIO SABOTAGE', textCanvas.width / 2, textCanvas.height / 2);
+
+  const textTex = new THREE.CanvasTexture(textCanvas);
+  textTex.colorSpace = THREE.SRGBColorSpace;
+  textTex.anisotropy = maxAniso;
+  const textW = 1.8;
+  const textH = textW * (textCanvas.height / textCanvas.width);
+  const textGeo = new THREE.PlaneGeometry(textW, textH);
+  const textMat = new THREE.MeshBasicMaterial({
+    map: textTex, transparent: true, alphaTest: 0.05,
+    side: THREE.DoubleSide, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+  });
+  const textMesh = new THREE.Mesh(textGeo, textMat);
+  textMesh.position.set(wallX, 2.85, 0);
+  textMesh.rotation.y = facingRotation;
+  textMesh.renderOrder = 21;
+  scene.add(textMesh);
+
+  // 2. Brandmark (logo.png) — centred on wall
+  textureLoader2.load(CDN_BASE + 'logo.png' + CDN_SUFFIX, (logoTex) => {
+    logoTex.colorSpace = THREE.SRGBColorSpace;
+    logoTex.anisotropy = maxAniso;
+    const aspect = logoTex.image.width / logoTex.image.height;
+    const logoH = 1.6;
+    const logoW = logoH * aspect;
+    const logoGeo = new THREE.PlaneGeometry(logoW, logoH);
+    const logoMat = new THREE.MeshBasicMaterial({
+      map: logoTex, transparent: true, alphaTest: 0.1,
+      side: THREE.DoubleSide, depthWrite: true,
+      polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
+    });
+    const logoMesh = new THREE.Mesh(logoGeo, logoMat);
+    logoMesh.position.set(wallX, 1.91, 0);
+    logoMesh.rotation.y = facingRotation;
+    logoMesh.renderOrder = 20;
+    scene.add(logoMesh);
+  });
+
+  // 3. sort-Tag below the logo
+  textureLoader2.load('./tag.png', (tagTex) => {
+    tagTex.colorSpace = THREE.SRGBColorSpace;
+    tagTex.anisotropy = maxAniso;
+    const tagAspect = tagTex.image.width / tagTex.image.height;
+    const tagH = 0.75;
+    const tagW = tagH * tagAspect;
+    const tagGeo = new THREE.PlaneGeometry(tagW, tagH);
+    const tagMat = new THREE.MeshBasicMaterial({
+      map: tagTex, transparent: true, alphaTest: 0.35,
+      side: THREE.DoubleSide, depthWrite: false,
+      polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2,
+    });
+    const tagMesh = new THREE.Mesh(tagGeo, tagMat);
+    tagMesh.position.set(wallX, 0.70, 0);
+    tagMesh.rotation.y = facingRotation;
+    tagMesh.renderOrder = 21;
+    scene.add(tagMesh);
+  });
+}
+
+// Front face of divider wall (wall at x=3.8)
+createBranding(3.78, -Math.PI / 2);
+
+// Partition wall near About area (facing +x)
+createBranding(-5.66, Math.PI / 2);
+
+// ─── Easter Egg ─────────────────────────────────────────────────────
+// Small pink tag sprayed near the entrance, low on the wall
+const easterEggLoader = new THREE.TextureLoader();
+easterEggLoader.load('./tag.png', (eeTex) => {
+  eeTex.colorSpace = THREE.SRGBColorSpace;
+  const eeAspect = eeTex.image.width / eeTex.image.height;
+  const eeH = 0.35;
+  const eeW = eeH * eeAspect;
+
+  // Tint it pink using canvas
+  const eeCanvas = document.createElement('canvas');
+  eeCanvas.width = eeTex.image.width;
+  eeCanvas.height = eeTex.image.height;
+  const eeCtx = eeCanvas.getContext('2d');
+  eeCtx.drawImage(eeTex.image, 0, 0);
+  eeCtx.globalCompositeOperation = 'source-atop';
+  eeCtx.fillStyle = '#FF3E8E';
+  eeCtx.fillRect(0, 0, eeCanvas.width, eeCanvas.height);
+
+  const eePinkTex = new THREE.CanvasTexture(eeCanvas);
+  eePinkTex.colorSpace = THREE.SRGBColorSpace;
+
+  const eeGeo = new THREE.PlaneGeometry(eeW, eeH);
+  const eeMat = new THREE.MeshBasicMaterial({
+    map: eePinkTex, transparent: true, alphaTest: 0.1,
+    side: THREE.DoubleSide, depthWrite: false,
+    color: 0xFF6BAE,
+  });
+  window.easterEgg = new THREE.Mesh(eeGeo, eeMat);
+  // Low on the wall near entrance, left corner — facing z+
+  window.easterEgg.position.set(-8.5, 0.35, -5.95);
+  window.easterEgg.rotation.y = 0; // flat on back wall z=-6, facing into room
+  window.easterEgg.renderOrder = 25;
+  scene.add(window.easterEgg);
+});
+
+let easterEggFound = false;
+const easterEggModal = document.createElement('div');
+easterEggModal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999; background:rgba(245,245,240,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); justify-content:center; align-items:center;';
+easterEggModal.innerHTML = `
+  <div style="text-align:center; max-width:500px; padding:40px;">
+    <p style="font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; color:#FF3E8E; font-size:1.6rem; line-height:1.6; letter-spacing:0.05em; font-style:italic;">
+      „Das ist der Moment, an dem ich erkannt habe, dass meine Kunst überall existieren kann."
+    </p>
+    <p style="font-family:monospace; color:rgba(0,0,0,0.3); font-size:0.7rem; margin-top:2rem; letter-spacing:0.15em; text-transform:uppercase;">click to close</p>
+  </div>
+`;
+document.body.appendChild(easterEggModal);
+easterEggModal.addEventListener('click', () => {
+  easterEggModal.style.display = 'none';
+  renderer.domElement.requestPointerLock();
+});
+
+// ─── Pointer Lock ────────────────────────────────────────────────────
+let isLocked = false;
+
+overlayEl.addEventListener('click', () => {
+  renderer.domElement.requestPointerLock();
+});
+
+// Also allow re-locking by clicking the canvas when overlay shows
+renderer.domElement.addEventListener('click', () => {
+  if (!isLocked) {
+    renderer.domElement.requestPointerLock();
+  }
+});
+
+const controlsHint = document.getElementById('controls-hint');
+
+const headerEl = document.getElementById('gallery-header');
+
+document.addEventListener('pointerlockchange', () => {
+  isLocked = document.pointerLockElement === renderer.domElement;
+  if (isLocked) {
+    overlayEl.classList.add('hidden');
+    crosshairEl.style.display = 'block';
+    controlsHint.style.display = 'block';
+  } else {
+    overlayEl.classList.remove('hidden');
+    crosshairEl.style.display = 'none';
+    controlsHint.style.display = 'none';
+    controlsHint.style.opacity = '1';
+    controlsHint.style.transition = 'none';
+    infoEl.classList.remove('visible');
+  }
+});
+
+// ─── Mouse look ──────────────────────────────────────────────────────
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+const MOUSE_SENSITIVITY = 0.002;
+const MAX_PITCH = Math.PI / 2 - 0.05;
+
+document.addEventListener('mousemove', (e) => {
+  if (!isLocked) return;
+  euler.setFromQuaternion(camera.quaternion);
+  euler.y -= e.movementX * MOUSE_SENSITIVITY;
+  euler.x -= e.movementY * MOUSE_SENSITIVITY;
+  euler.x = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, euler.x));
+  camera.quaternion.setFromEuler(euler);
+});
+
+// ─── Keyboard movement ──────────────────────────────────────────────
+const keys = {};
+document.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+  // Q or Tab to exit pointer lock (alternative to ESC)
+  if ((e.code === 'KeyQ' || e.code === 'Tab') && isLocked) {
+    e.preventDefault();
+    document.exitPointerLock();
+  }
+  // ESC closes product popup and easter egg modal
+  if (e.code === 'Escape') {
+    if (productModal.style.display === 'flex') {
+      productModal.style.display = 'none';
+      renderer.domElement.requestPointerLock();
+    }
+    if (easterEggModal.style.display === 'flex') {
+      easterEggModal.style.display = 'none';
+      renderer.domElement.requestPointerLock();
+    }
+  }
+});
+document.addEventListener('keyup',   (e) => { keys[e.code] = false; });
+
+const MOVE_SPEED = 3.5; // units/sec — comfortable walk pace
+const direction  = new THREE.Vector3();
+const forward    = new THREE.Vector3();
+const right      = new THREE.Vector3();
+
+function updateMovement(dt) {
+  if (!isLocked) return;
+
+  direction.set(0, 0, 0);
+
+  // Get camera's forward (xz plane only)
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  forward.normalize();
+
+  // Right vector
+  right.crossVectors(forward, camera.up).normalize();
+
+  if (keys['KeyW'] || keys['ArrowUp'])    direction.add(forward);
+  if (keys['KeyS'] || keys['ArrowDown'])   direction.sub(forward);
+  if (keys['KeyA'] || keys['ArrowLeft'])   direction.sub(right);
+  if (keys['KeyD'] || keys['ArrowRight'])  direction.add(right);
+
+  if (direction.lengthSq() > 0) {
+    direction.normalize();
+    camera.position.addScaledVector(direction, MOVE_SPEED * dt);
+  }
+
+  // Clamp to room boundaries (prevent walking through walls)
+  camera.position.x = Math.max(ROOM_BOUNDS.xMin, Math.min(ROOM_BOUNDS.xMax, camera.position.x));
+  camera.position.z = Math.max(ROOM_BOUNDS.zMin, Math.min(ROOM_BOUNDS.zMax, camera.position.z));
+
+  // Clamp to internal walls (partition)
+  clampToWalls(camera.position);
+
+  // Keep player at eye height (simple floor constraint)
+  camera.position.y = 1.7;
+}
+
+// ─── Raycasting / interaction ────────────────────────────────────────
+let hoveredPainting = null;
+
+function updateRaycast() {
+  if (!isLocked) return;
+
+  raycaster.setFromCamera(screenCenter, camera);
+
+  // Collect all painting meshes for intersection
+  const intersects = raycaster.intersectObjects(paintingMeshes, false);
+
+  if (intersects.length > 0) {
+    const hit = intersects[0].object;
+    const idx = hit.userData.paintingIndex;
+    if (idx !== undefined) {
+      hoveredPainting = idx;
+      const p = PAINTINGS[idx];
+      infoTitle.textContent = p.title;
+      infoPrice.textContent = p.price || '';
+      infoEl.classList.add('visible');
+      renderer.domElement.style.cursor = 'pointer';
+      return;
+    }
+  }
+
+  // Check for Easter Egg — only highlight, open on double-click
+  if (!easterEggFound && window.easterEgg) {
+    const eeIntersects = raycaster.intersectObject(window.easterEgg);
+    window.easterEggHovered = eeIntersects.length > 0;
+  }
+
+  hoveredPainting = null;
+  infoEl.classList.remove('visible');
+  renderer.domElement.style.cursor = '';
+}
+
+// ─── Product Popup (native, no iframe) ──────────────────────────────
+const productModal = document.createElement('div');
+productModal.id = 'product-modal';
+productModal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999; background:rgba(245,245,240,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); justify-content:center; align-items:center;';
+productModal.innerHTML = `
+  <div id="product-card" style="position:relative; width:90%; max-width:420px; border-radius:16px; overflow:hidden; background:rgba(245,245,240,0.95); color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; box-shadow:0 20px 60px rgba(0,0,0,0.15), 0 0 30px rgba(255,62,142,0.08);">
+    <button id="product-close" style="position:absolute; top:12px; right:12px; z-index:100000; background:rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.1); color:rgba(0,0,0,0.6); font-size:18px; cursor:pointer; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.25s ease;" onmouseover="this.style.background='rgba(255,62,142,0.1)';this.style.borderColor='rgba(255,62,142,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.06)';this.style.borderColor='rgba(0,0,0,0.1)'">✕</button>
+    <img id="product-img" style="width:100%; aspect-ratio:1; object-fit:cover; display:block;" />
+    <div style="padding:24px;">
+      <h2 id="product-title" style="margin:0 0 8px 0; font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:22px; font-weight:400; letter-spacing:0.05em;"></h2>
+      <p id="product-dims" style="margin:0 0 20px 0; font-family:monospace; font-size:0.75rem; color:rgba(0,0,0,0.45); letter-spacing:0.05em;"></p>
+      <a id="product-buy" target="_blank" style="display:flex; align-items:center; justify-content:center; text-decoration:none; padding:14px 24px; border-radius:8px; font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:1rem; font-weight:400; letter-spacing:0.1em; line-height:1.2; text-transform:uppercase; color:rgba(0,0,0,0.85); border:1px solid rgba(255,62,142,0.4); background:rgba(255,62,142,0.05); backdrop-filter:blur(6px); box-shadow:0 0 20px rgba(255,62,142,0.08); transition:all 0.25s ease;" onmouseover="this.style.background='rgba(255,62,142,0.15)';this.style.borderColor='rgba(255,62,142,0.5)';this.style.boxShadow='0 0 30px rgba(255,62,142,0.2)'" onmouseout="this.style.background='rgba(255,62,142,0.05)';this.style.borderColor='rgba(255,62,142,0.4)';this.style.boxShadow='0 0 20px rgba(255,62,142,0.08)'">View in Shop</a>
+    </div>
+  </div>
+`;
+document.body.appendChild(productModal);
+
+document.getElementById('product-close').addEventListener('click', (e) => {
+  e.stopPropagation();
+  productModal.style.display = 'none';
+  renderer.domElement.requestPointerLock();
+});
+
+productModal.addEventListener('click', (e) => {
+  if (e.target === productModal) {
+    productModal.style.display = 'none';
+    renderer.domElement.requestPointerLock();
+  }
+});
+
+// Click on painting → open product popup
+document.addEventListener('click', () => {
+  if (!isLocked) return;
+  if (hoveredPainting !== null) {
+    const p = PAINTINGS[hoveredPainting];
+    const imgIdx = String(hoveredPainting).padStart(2, '0');
+    document.exitPointerLock();
+    document.getElementById('product-img').src = `${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}`;
+    document.getElementById('product-title').textContent = p.title;
+    document.getElementById('product-dims').textContent = `${p.w} × ${p.h} cm · Oil / Acrylic on Canvas`;
+    document.getElementById('product-buy').href = `https://0u99wg-s5.myshopify.com/products/${p.handle}`;
+    productModal.style.display = 'flex';
+  }
+});
+
+// ─── Doppelklick-Teleport ─────────────────────────────────────────────
+// Double-click on floor → smooth glide to that point
+let teleportTarget = null;
+let teleportStart = null;
+let teleportProgress = 0;
+const TELEPORT_DURATION = 0.5; // seconds
+
+// Create a floor plane for raycasting (invisible, matches room floor)
+const floorPlane = new THREE.Mesh(
+  new THREE.PlaneGeometry(30, 20),
+  new THREE.MeshBasicMaterial({ visible: false })
+);
+floorPlane.rotation.x = -Math.PI / 2;
+floorPlane.position.y = 0.01;
+scene.add(floorPlane);
+
+document.addEventListener('dblclick', (e) => {
+  if (!isLocked) return;
+  if (hoveredPainting !== null) return; // don't teleport when looking at painting
+
+  // Easter Egg — double-click to open
+  if (!easterEggFound && window.easterEggHovered) {
+    easterEggFound = true;
+    document.exitPointerLock();
+    easterEggModal.style.display = 'flex';
+    return;
+  }
+
+  // Raycast from camera center to find floor hit
+  raycaster.setFromCamera(screenCenter, camera);
+  const hits = raycaster.intersectObject(floorPlane);
+
+  if (hits.length > 0) {
+    const target = hits[0].point.clone();
+    // Clamp target to room bounds
+    target.x = Math.max(ROOM_BOUNDS.xMin + 0.5, Math.min(ROOM_BOUNDS.xMax - 0.5, target.x));
+    target.z = Math.max(ROOM_BOUNDS.zMin + 0.5, Math.min(ROOM_BOUNDS.zMax - 0.5, target.z));
+    target.y = 1.7; // eye height
+
+    // Don't teleport into internal walls
+    clampToWalls(target);
+
+    teleportStart = camera.position.clone();
+    teleportTarget = target;
+    teleportProgress = 0;
+  }
+});
+
+function updateTeleport(dt) {
+  if (!teleportTarget) return;
+
+  teleportProgress += dt / TELEPORT_DURATION;
+
+  if (teleportProgress >= 1.0) {
+    camera.position.copy(teleportTarget);
+    teleportTarget = null;
+    return;
+  }
+
+  // Smooth ease-out curve
+  const t = 1 - Math.pow(1 - teleportProgress, 3);
+  camera.position.lerpVectors(teleportStart, teleportTarget, t);
+}
+
+// ─── Resize ──────────────────────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ─── Animation loop ──────────────────────────────────────────────────
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  // Cap dt to avoid big jumps (e.g. after tab switch)
+  const dt = Math.min(clock.getDelta(), 0.1);
+
+  updateMovement(dt);
+  updateTeleport(dt);
+  updateRaycast();
+  renderer.render(scene, camera);
+}
+
+animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /about3d/index.html
+Disallow: /gallery3d/index.html
+
+Sitemap: https://studiosabotage.com/sitemap.xml

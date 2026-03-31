@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sub Rosa — Studio Sabotage</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: #000; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; }
+  canvas { display: block; }
+
+  #overlay {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+  }
+  #overlay.hidden { opacity: 0; pointer-events: none; }
+  #overlay h1 {
+    font-size: 2.5rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: #4488cc; text-shadow: 0 0 30px rgba(68,136,204,0.5);
+    margin-bottom: 12px;
+  }
+  #overlay p {
+    font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  #crosshair {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 20px; height: 20px; z-index: 5; pointer-events: none; display: none;
+  }
+  #crosshair::before, #crosshair::after {
+    content: ''; position: absolute; background: rgba(255,62,142,0.7);
+  }
+  #crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+  #crosshair::after { width: 100%; height: 2px; top: 50%; transform: translateY(-50%); }
+
+  #debug {
+    position: fixed; bottom: 16px; left: 16px; z-index: 200;
+    font-family: monospace; font-size: 0.7rem; color: #4488cc;
+    background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 4px;
+    pointer-events: none; border: 1px solid rgba(68,136,204,0.3);
+    display: none;
+  }
+
+  #info {
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    z-index: 15; text-align: center; pointer-events: none;
+    font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    transition: opacity 0.3s ease;
+    opacity: 0;
+  }
+  #info.visible { opacity: 1; }
+
+  #controls-hint {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 15; text-align: center; pointer-events: none;
+    font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(68,136,204,0.5);
+  }
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <h1>Sub Rosa</h1>
+  <p>Click to enter</p>
+</div>
+
+<div id="crosshair"></div>
+<div id="debug"></div>
+<div id="info"></div>
+<div id="controls-hint">WASD move · Mouse look · ? debug · ESC exit</div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+// === PAINTINGS DATA ===
+const CDN_BASE = 'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/';
+const CDN_SUFFIX = '?v=1774065825';
+
+// Manufactory: 1 large (DRMS) + 3 small
+const MANUFACTORY_PAINTINGS = [
+  { title: 'DRMS',             url: CDN_BASE + 'drms.jpg?v=1774374693',                    w: 306, h: 153, large: true },
+  { title: 'Pink Rabbit',      url: CDN_BASE + 'painting_11.jpg' + CDN_SUFFIX,             w: 60,  h: 80 },
+  { title: 'Rabbit II',        url: CDN_BASE + 'painting_12.jpg' + CDN_SUFFIX,             w: 60,  h: 80 },
+  { title: 'Figure on Pink',   url: CDN_BASE + 'painting_13.jpg' + CDN_SUFFIX,             w: 60,  h: 80 },
+];
+
+// Social Rooms: 3 small
+const SOCIALROOMS_PAINTINGS = [
+  { title: 'Rabbit on Yellow', url: CDN_BASE + 'painting_14.jpg' + CDN_SUFFIX,             w: 60,  h: 80 },
+  { title: 'Dark Portrait',    url: CDN_BASE + 'painting_06.jpg' + CDN_SUFFIX,             w: 80,  h: 80 },
+  { title: 'Pink Faces',       url: CDN_BASE + 'painting_05.jpg' + CDN_SUFFIX,             w: 60,  h: 120 },
+];
+
+// === STATE ===
+let isLocked = false;
+let modelLoaded = false;
+let floorY = 0;
+let eyeHeight = 1.7;
+let roomBounds = { xMin: -10, xMax: 10, zMin: -10, zMax: 10 };
+const paintingMeshes = [];
+let hoveredPainting = null;
+
+// === SCENE ===
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050508);
+scene.fog = new THREE.FogExp2(0x050508, 0.03);
+
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 3, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 2.2;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// === LIGHTING ===
+const ambient = new THREE.AmbientLight(0x889999, 1.0);
+scene.add(ambient);
+
+const hemi = new THREE.HemisphereLight(0xaabbcc, 0x111122, 0.5);
+scene.add(hemi);
+
+const fill = new THREE.DirectionalLight(0x8899aa, 0.4);
+fill.position.set(0, 15, 0);
+scene.add(fill);
+
+// Dynamic lights — repositioned after floor detection
+const skyLight = new THREE.PointLight(0x6699cc, 2.0, 40);
+scene.add(skyLight);
+const skyLight2 = new THREE.PointLight(0x6699cc, 1.2, 35);
+scene.add(skyLight2);
+const pinkNeon = new THREE.PointLight(0xFF3E8E, 0.6, 20);
+scene.add(pinkNeon);
+
+// === LOADERS ===
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+const textureLoader = new THREE.TextureLoader();
+
+// === RAYCASTER ===
+const raycaster = new THREE.Raycaster();
+raycaster.far = 10;
+const screenCenter = new THREE.Vector2(0, 0);
+
+// === CREATE PAINTING MESH ===
+function createPaintingMesh(texture, p, position, rotationY) {
+  // Scale paintings to match the large manufactory space
+  // 4/100 means 100cm = 4 three.js units (so DRMS 400cm = 16 units, Pink Rabbit 60cm = 2.4 units)
+  const pScale = 4.0 / 100;
+  const pw = p.w * pScale;
+  const ph = p.h * pScale;
+
+  const group = new THREE.Group();
+
+  // Frame
+  const frameW = 0.04;
+  const frameD = 0.06;
+  const isPink = Math.random() > 0.5;
+  const frameMat = isPink
+    ? new THREE.MeshStandardMaterial({ color: 0xF5A0B5, roughness: 0.35, metalness: 0.2 })
+    : new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.25, metalness: 0.15 });
+
+  // Back
+  const backGeo = new THREE.PlaneGeometry(pw + frameW * 2, ph + frameW * 2);
+  group.add(new THREE.Mesh(backGeo, new THREE.MeshStandardMaterial({ color: 0x0a0a08 })));
+
+  // Frame border
+  function addFrame(halfW, halfH, w, d, mat) {
+    const fullW = (halfW + w) * 2;
+    const top = new THREE.Mesh(new THREE.BoxGeometry(fullW, w, d), mat);
+    top.position.set(0, halfH + w / 2, d / 2); group.add(top);
+    const bot = new THREE.Mesh(new THREE.BoxGeometry(fullW, w, d), mat);
+    bot.position.set(0, -halfH - w / 2, d / 2); group.add(bot);
+    const left = new THREE.Mesh(new THREE.BoxGeometry(w, halfH * 2, d), mat);
+    left.position.set(-halfW - w / 2, 0, d / 2); group.add(left);
+    const right = new THREE.Mesh(new THREE.BoxGeometry(w, halfH * 2, d), mat);
+    right.position.set(halfW + w / 2, 0, d / 2); group.add(right);
+  }
+  addFrame(pw / 2, ph / 2, frameW, frameD, frameMat);
+
+  // Canvas
+  const paintGeo = new THREE.PlaneGeometry(pw, ph);
+  const paintMat = texture
+    ? new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85, metalness: 0.0, side: THREE.DoubleSide })
+    : new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide });
+  const paintMesh = new THREE.Mesh(paintGeo, paintMat);
+  paintMesh.position.z = 0.03;
+  group.add(paintMesh);
+
+  group.position.copy(position);
+  group.rotation.y = rotationY;
+  scene.add(group);
+
+  // SpotLight per painting — with shadow casting
+  const spotDir = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
+  const spotPos = position.clone().add(new THREE.Vector3(0, ph / 2 + 1.5, 0)).sub(spotDir.clone().multiplyScalar(1.0));
+  const spot = new THREE.SpotLight(0xfff8f0, 4.0, 15, Math.PI / 5, 0.5, 1.5);
+  spot.position.copy(spotPos);
+  spot.target.position.copy(position);
+  spot.castShadow = true;
+  spot.shadow.mapSize.width = 512;
+  spot.shadow.mapSize.height = 512;
+  spot.shadow.bias = -0.001;
+  scene.add(spot);
+  scene.add(spot.target);
+
+  // Painting casts shadow, frame pieces too
+  group.traverse(child => {
+    if (child.isMesh) child.castShadow = true;
+  });
+
+  paintMesh.userData = { paintingTitle: p.title, paintingData: p };
+  paintingMeshes.push(paintMesh);
+
+  return group;
+}
+
+// === LOAD GLB ===
+gltfLoader.load(
+  './vault3d/manufactory.glb',
+  (gltf) => {
+    const model = gltf.scene;
+
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 30 / maxDim;
+    model.scale.setScalar(scale);
+
+    const scaledBox = new THREE.Box3().setFromObject(model);
+    const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
+    const scaledSize = scaledBox.getSize(new THREE.Vector3());
+    model.position.x -= scaledCenter.x;
+    model.position.z -= scaledCenter.z;
+    model.position.y -= scaledBox.min.y;
+    // Walls receive shadows from paintings
+    model.traverse(child => {
+      if (child.isMesh) child.receiveShadow = true;
+    });
+    scene.add(model);
+
+    const finalBox = new THREE.Box3().setFromObject(model);
+    const margin = scaledSize.x * 0.12;
+    roomBounds = {
+      xMin: finalBox.min.x + margin,
+      xMax: finalBox.max.x - margin,
+      zMin: finalBox.min.z + margin,
+      zMax: finalBox.max.z - margin
+    };
+
+    // Floor detection
+    const floorRay = new THREE.Raycaster();
+    floorRay.set(new THREE.Vector3(0, 20, 0), new THREE.Vector3(0, -1, 0));
+    const allHits = floorRay.intersectObject(model, true);
+
+    console.log('[Sub Rosa] Vertical hits:', JSON.stringify(
+      allHits.map(h => ({ y: h.point.y.toFixed(2), mesh: h.object.name || '?' }))
+    ));
+
+    if (allHits.length >= 3) {
+      floorY = allHits[allHits.length - 2].point.y;
+    } else if (allHits.length >= 1) {
+      floorY = allHits[allHits.length - 1].point.y;
+    }
+
+    eyeHeight = floorY + 6.4; // just below window top / gate top
+    const ceilingY = allHits.length >= 2 ? allHits[0].point.y : floorY + 8;
+
+    console.log('[Sub Rosa] Floor:', floorY.toFixed(2), 'Eye:', eyeHeight.toFixed(2),
+                'Ceiling:', ceilingY.toFixed(2), 'Bounds:', JSON.stringify(roomBounds));
+
+    // Position camera
+    camera.position.set(0, eyeHeight, 0);
+    camera.lookAt(3, eyeHeight, 0);
+
+    // Position lights relative to floor
+    skyLight.position.set(0, floorY + 10, 0);
+    skyLight2.position.set(-5, floorY + 9, 3);
+    pinkNeon.position.set(4, floorY + 5, -2);
+
+    modelLoaded = true;
+
+    // === MANUAL PAINTING PLACEMENT (from debug coordinates) ===
+    // Positions mapped by walking through the space with ? debug mode
+    const paintingY = eyeHeight - 0.5; // slightly below eye level — center of painting
+    const wallGap = 0.3; // small gap so painting doesn't clip into wall
+
+    // DRMS — garage wall (x-negative wall, facing +x)
+    // Debug: cam at x:-11.40, z:1.94 looking at wall. Wall is at approx x:-13
+    // === WALL DETECTION via Raycast — paintings find their walls automatically ===
+    const wallRay = new THREE.Raycaster();
+    const scanOrigin = new THREE.Vector3(0, eyeHeight, 0);
+
+    // Scan 12 directions to find all walls
+    const scanDirs = [];
+    for (let angle = 0; angle < 360; angle += 30) {
+      const rad = angle * Math.PI / 180;
+      scanDirs.push({
+        dir: new THREE.Vector3(Math.sin(rad), 0, Math.cos(rad)),
+        angle: angle
+      });
+    }
+
+    const walls = [];
+    scanDirs.forEach(d => {
+      wallRay.set(scanOrigin, d.dir);
+      const hits = wallRay.intersectObject(model, true);
+      if (hits.length > 0 && hits[0].distance < 25) {
+        walls.push({
+          point: hits[0].point.clone(),
+          normal: hits[0].face ? hits[0].face.normal.clone().transformDirection(hits[0].object.matrixWorld).normalize() : d.dir.clone().negate(),
+          distance: hits[0].distance,
+          angle: d.angle
+        });
+      }
+    });
+
+    // Sort by distance — closest walls first
+    walls.sort((a, b) => a.distance - b.distance);
+    console.log('[Sub Rosa] Walls found:', walls.map(w =>
+      `${w.angle}°: dist=${w.distance.toFixed(1)} at (${w.point.x.toFixed(1)},${w.point.z.toFixed(1)})`
+    ).join(' | '));
+
+    // Fixed positions based on raycast results + manual corrections
+    // 0.5m real ≈ 1.0 units at this scale
+    const placements = [
+      { painting: MANUFACTORY_PAINTINGS[0], // DRMS — wall at z+, shifted left
+        pos: new THREE.Vector3(8.0, paintingY, 8.1),
+        rotY: Math.PI },  // faces -z (into room)
+
+      { painting: MANUFACTORY_PAINTINGS[1], // Pink Rabbit — wall at z+
+        pos: new THREE.Vector3(0.0, paintingY, 7.1),
+        rotY: Math.PI },  // faces -z (into room)
+
+      { painting: MANUFACTORY_PAINTINGS[2], // Rabbit II — wall at z-
+        pos: new THREE.Vector3(0.0, paintingY, -8.5),
+        rotY: 0 },  // faces +z (into room)
+
+      { painting: MANUFACTORY_PAINTINGS[3], // Figure on Pink — 20cm näher an Wand
+        pos: new THREE.Vector3(-13.5, paintingY, -5.5),
+        rotY: Math.PI / 2 },
+    ];
+
+    placements.forEach(pl => {
+      textureLoader.load(pl.painting.url, (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        createPaintingMesh(tex, pl.painting, pl.pos, pl.rotY);
+        console.log('[Sub Rosa] Placed "' + pl.painting.title + '" at (' +
+                    pl.pos.x.toFixed(1) + ',' + pl.pos.z.toFixed(1) + ')');
+      }, undefined, () => {
+        console.warn('[Sub Rosa] Failed to load:', pl.painting.title);
+      });
+    });
+  },
+  (progress) => {
+    if (progress.total > 0) {
+      const pct = (progress.loaded / progress.total * 100).toFixed(0);
+      document.querySelector('#overlay p').textContent = `Loading ${pct}%...`;
+    }
+  },
+  (error) => {
+    console.error('[Sub Rosa] GLB load error:', error);
+    document.querySelector('#overlay p').textContent = 'Error loading model';
+  }
+);
+
+// === CONTROLS ===
+const overlay = document.getElementById('overlay');
+const crosshair = document.getElementById('crosshair');
+const debugEl = document.getElementById('debug');
+const infoEl = document.getElementById('info');
+
+overlay.addEventListener('click', () => {
+  if (!modelLoaded) return;
+  renderer.domElement.requestPointerLock();
+});
+
+document.addEventListener('pointerlockchange', () => {
+  isLocked = document.pointerLockElement === renderer.domElement;
+  if (isLocked) {
+    overlay.classList.add('hidden');
+    crosshair.style.display = 'block';
+  } else {
+    overlay.classList.remove('hidden');
+    crosshair.style.display = 'none';
+  }
+});
+
+// Mouse look
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+const MOUSE_SENSITIVITY = 0.002;
+const MAX_PITCH = Math.PI / 2 - 0.05;
+
+document.addEventListener('mousemove', (e) => {
+  if (!isLocked) return;
+  euler.setFromQuaternion(camera.quaternion);
+  euler.y -= e.movementX * MOUSE_SENSITIVITY;
+  euler.x -= e.movementY * MOUSE_SENSITIVITY;
+  euler.x = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, euler.x));
+  camera.quaternion.setFromEuler(euler);
+});
+
+// WASD
+const keys = {};
+const MOVE_SPEED = 3.5;
+
+document.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+  if (e.key === '?') debugEl.style.display = debugEl.style.display === 'none' ? 'block' : 'none';
+});
+document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+// Click on painting
+document.addEventListener('click', () => {
+  if (!isLocked || hoveredPainting === null) return;
+  const p = hoveredPainting;
+  console.log('[Sub Rosa] Clicked painting:', p.paintingTitle);
+  // Could open a modal or link here
+});
+
+function updateMovement(dt) {
+  if (!isLocked || !modelLoaded) return;
+
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  forward.normalize();
+
+  const right = new THREE.Vector3();
+  right.crossVectors(forward, camera.up).normalize();
+
+  const direction = new THREE.Vector3();
+  if (keys['KeyW'] || keys['ArrowUp']) direction.add(forward);
+  if (keys['KeyS'] || keys['ArrowDown']) direction.sub(forward);
+  if (keys['KeyD'] || keys['ArrowRight']) direction.add(right);
+  if (keys['KeyA'] || keys['ArrowLeft']) direction.sub(right);
+
+  if (direction.lengthSq() > 0) {
+    direction.normalize();
+    camera.position.addScaledVector(direction, MOVE_SPEED * dt);
+  }
+
+  camera.position.x = Math.max(roomBounds.xMin, Math.min(roomBounds.xMax, camera.position.x));
+  camera.position.z = Math.max(roomBounds.zMin, Math.min(roomBounds.zMax, camera.position.z));
+  camera.position.y = eyeHeight;
+}
+
+function updateRaycast() {
+  if (!isLocked) return;
+
+  raycaster.setFromCamera(screenCenter, camera);
+  const hits = raycaster.intersectObjects(paintingMeshes, false);
+
+  if (hits.length > 0) {
+    const data = hits[0].object.userData;
+    if (data.paintingTitle) {
+      hoveredPainting = data;
+      infoEl.textContent = data.paintingTitle + ` — ${data.paintingData.w} × ${data.paintingData.h} cm`;
+      infoEl.classList.add('visible');
+      renderer.domElement.style.cursor = 'pointer';
+      return;
+    }
+  }
+
+  hoveredPainting = null;
+  infoEl.classList.remove('visible');
+  renderer.domElement.style.cursor = '';
+}
+
+// === ANIMATE ===
+let lastTime = performance.now();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+
+  updateMovement(dt);
+  updateRaycast();
+
+  if (debugEl.style.display !== 'none') {
+    debugEl.textContent = `cam: x:${camera.position.x.toFixed(2)} y:${camera.position.y.toFixed(2)} z:${camera.position.z.toFixed(2)} | floor:${floorY.toFixed(2)} eye:${eyeHeight.toFixed(2)}`;
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+</script>
+</body>
+</html>

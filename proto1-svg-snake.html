@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Prototyp 1 — SVG Snake Path Animation</title>
+<style>
+  @font-face { font-family: 'Nimbus Sans'; font-weight: 400; src: url('./fonts/NimbusSans-Regular.woff2') format('woff2'); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #fff; overflow: hidden; font-family: 'Nimbus Sans', sans-serif; }
+  .container { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  svg.snake-bg {
+    position: fixed; inset: -20px; width: calc(100% + 40px); height: calc(100% + 40px);
+    opacity: 0.5;
+  }
+  .snake-path {
+    fill: none;
+    stroke: #000;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 8000;
+    stroke-dashoffset: 8000;
+    animation: drawSnake 4s ease-out forwards;
+  }
+  .snake-path-thick {
+    fill: none;
+    stroke: #000;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 8000;
+    stroke-dashoffset: 8000;
+    animation: drawSnake 4.5s ease-out 0.3s forwards;
+    opacity: 0.15;
+  }
+  .snake-scales {
+    fill: none;
+    stroke: #000;
+    stroke-width: 0.5;
+    stroke-dasharray: 3 6;
+    stroke-dashoffset: 5000;
+    animation: drawSnake 5s ease-out 1s forwards;
+    opacity: 0.3;
+  }
+  @keyframes drawSnake {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Radial fade like original */
+  .vignette {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 30% 50% at 50% 45%, transparent 0%, transparent 40%, rgba(255,255,255,0.4) 55%, rgba(255,255,255,0.85) 70%, white 85%);
+    pointer-events: none;
+  }
+
+  .brand { position: relative; z-index: 10; text-align: center; }
+  .brand p { color: rgba(0,0,0,0.85); font-size: 1rem; letter-spacing: 0.35em; text-transform: uppercase; margin-bottom: 1.2rem; }
+  .brand img.logo { height: 200px; width: auto; margin-bottom: 0.8rem; }
+  .brand img.tag { width: 147px; height: auto; }
+  .cta {
+    margin-top: 1rem; font-size: 2rem; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid rgba(245,160,181,0.4); padding: 0.8rem 2.5rem;
+    background: rgba(245,160,181,0.05); backdrop-filter: blur(6px);
+    color: rgba(0,0,0,0.85); cursor: pointer; position: relative; z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<svg class="snake-bg" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
+  <!-- Main snake body - flowing S-curves around the viewport -->
+  <path class="snake-path" d="
+    M -50,450
+    C 50,200 150,100 300,80
+    C 450,60 500,200 550,350
+    C 600,500 650,700 800,750
+    C 950,800 1000,600 1050,450
+    C 1100,300 1150,100 1300,80
+    C 1400,70 1450,200 1450,350
+  "/>
+  <path class="snake-path-thick" d="
+    M -50,450
+    C 50,200 150,100 300,80
+    C 450,60 500,200 550,350
+    C 600,500 650,700 800,750
+    C 950,800 1000,600 1050,450
+    C 1100,300 1150,100 1300,80
+    C 1400,70 1450,200 1450,350
+  "/>
+
+  <!-- Second snake path - wrapping other direction -->
+  <path class="snake-path" style="animation-delay: 0.8s" d="
+    M 700,-50
+    C 500,50 200,100 100,250
+    C 0,400 100,550 250,600
+    C 400,650 600,600 700,500
+    C 800,400 900,250 1100,200
+    C 1300,150 1400,300 1450,450
+  "/>
+  <path class="snake-path-thick" style="animation-delay: 1s" d="
+    M 700,-50
+    C 500,50 200,100 100,250
+    C 0,400 100,550 250,600
+    C 400,650 600,600 700,500
+    C 800,400 900,250 1100,200
+    C 1300,150 1400,300 1450,450
+  "/>
+
+  <!-- Calligraphy flourishes -->
+  <path class="snake-scales" style="animation-delay: 1.5s" d="
+    M 200,150 C 250,120 280,180 320,150 C 360,120 380,180 420,150
+    M 900,700 C 950,670 980,730 1020,700 C 1060,670 1080,730 1120,700
+    M 150,500 C 180,470 200,530 230,500 C 260,470 280,530 310,500
+    M 1000,300 C 1030,270 1050,330 1080,300 C 1110,270 1130,330 1160,300
+  "/>
+
+  <!-- Decorative loops at snake heads -->
+  <path class="snake-path" style="animation-delay: 2s; stroke-width: 1" d="
+    M 280,70 C 260,40 290,20 310,40 C 330,60 300,80 280,70
+    M 1310,70 C 1290,40 1320,20 1340,40 C 1360,60 1330,80 1310,70
+  "/>
+</svg>
+
+<div class="vignette"></div>
+
+<div class="container">
+  <div class="brand">
+    <p>Studio Sabotage</p>
+    <img class="logo" src="./gallery3d/logo.png" alt="S">
+    <br>
+    <img class="tag" src="./gallery3d/tag.png" alt="tag">
+    <div class="cta">Click to Come in, Bitches.</div>
+  </div>
+</div>
+
+</body>
+</html>

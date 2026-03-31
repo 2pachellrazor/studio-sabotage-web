@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merch Room — Studio Sabotage</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nimbus+Sans&display=swap');
+
+  :root {
+    --ss-pink: #F5A0B5;
+    --ss-neon: #FF3E8E;
+    --ss-black: #000000;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { overflow: hidden; background: var(--ss-black); font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; }
+  canvas { display: block; }
+
+  #overlay {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.5s ease;
+  }
+  #overlay.hidden { opacity: 0; pointer-events: none; }
+  #overlay h1 {
+    font-size: 2.5rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--ss-neon); text-shadow: 0 0 30px rgba(255,62,142,0.5);
+    margin-bottom: 12px;
+  }
+  #overlay p {
+    font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  #crosshair {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 20px; height: 20px; z-index: 5; pointer-events: none; display: none;
+  }
+  #crosshair::before, #crosshair::after {
+    content: ''; position: absolute; background: rgba(255,62,142,0.7);
+  }
+  #crosshair::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+  #crosshair::after { width: 100%; height: 2px; top: 50%; transform: translateY(-50%); }
+
+  #debug {
+    position: fixed; bottom: 16px; left: 16px; z-index: 200;
+    font-family: monospace; font-size: 0.7rem; color: var(--ss-neon);
+    background: rgba(0,0,0,0.8); padding: 8px 12px; border-radius: 4px;
+    pointer-events: none; border: 1px solid rgba(255,62,142,0.3);
+    display: none;
+  }
+
+  #controls-hint {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 15; text-align: center; pointer-events: none;
+    font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(245,160,181,0.5);
+  }
+</style>
+</head>
+<body>
+
+<div id="overlay">
+  <h1>Merch Room</h1>
+  <p>Click to enter</p>
+</div>
+
+<div id="crosshair"></div>
+<div id="debug"></div>
+<div id="controls-hint">WASD move · Mouse look · ? debug · ESC exit</div>
+
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+// === STATE ===
+let isLocked = false;
+let modelLoaded = false;
+let floorY = 0;
+let eyeHeight = 1.7;
+let roomBounds = { xMin: -10, xMax: 10, zMin: -10, zMax: 10 };
+
+// === SCENE ===
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050508);
+scene.fog = new THREE.FogExp2(0x050508, 0.025);
+
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 3, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 2.2;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// === LIGHTING ===
+// Ambient
+const ambient = new THREE.AmbientLight(0x889999, 1.0);
+scene.add(ambient);
+
+const hemi = new THREE.HemisphereLight(0xaabbcc, 0x111122, 0.5);
+scene.add(hemi);
+
+const fill = new THREE.DirectionalLight(0x8899aa, 0.4);
+fill.position.set(0, 15, 0);
+scene.add(fill);
+
+// Dynamic lights — repositioned after floor detection
+const skyLight = new THREE.PointLight(0x6699cc, 2.0, 40);
+scene.add(skyLight);
+const skyLight2 = new THREE.PointLight(0x6699cc, 1.2, 35);
+scene.add(skyLight2);
+// Pink neon accent (CI color)
+const pinkNeon = new THREE.PointLight(0xFF3E8E, 0.8, 25);
+scene.add(pinkNeon);
+const pinkNeon2 = new THREE.PointLight(0xF5A0B5, 0.4, 20);
+scene.add(pinkNeon2);
+
+// === LOADERS ===
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+
+// === LOAD GLB ===
+gltfLoader.load(
+  './merch3d/two_social_rooms_in_a_ruined_building.glb',
+  (gltf) => {
+    const model = gltf.scene;
+
+    // Scale model to fit ~30 units
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 30 / maxDim;
+    model.scale.setScalar(scale);
+
+    // Center horizontally, floor at y=0
+    const scaledBox = new THREE.Box3().setFromObject(model);
+    const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
+    const scaledSize = scaledBox.getSize(new THREE.Vector3());
+    model.position.x -= scaledCenter.x;
+    model.position.z -= scaledCenter.z;
+    model.position.y -= scaledBox.min.y;
+
+    // Walls receive shadows
+    model.traverse(child => {
+      if (child.isMesh) child.receiveShadow = true;
+    });
+    scene.add(model);
+
+    // Room bounds
+    const finalBox = new THREE.Box3().setFromObject(model);
+    const margin = scaledSize.x * 0.12;
+    roomBounds = {
+      xMin: finalBox.min.x + margin,
+      xMax: finalBox.max.x - margin,
+      zMin: finalBox.min.z + margin,
+      zMax: finalBox.max.z - margin
+    };
+
+    // === FLOOR DETECTION (multi-point scan) ===
+    const floorRay = new THREE.Raycaster();
+    const scanPositions = [
+      new THREE.Vector3(0, 50, 0),
+      new THREE.Vector3(3, 50, 0),
+      new THREE.Vector3(-3, 50, 0),
+      new THREE.Vector3(0, 50, 3),
+      new THREE.Vector3(0, 50, -3),
+      new THREE.Vector3(5, 50, 5),
+      new THREE.Vector3(-5, 50, -5),
+    ];
+
+    let lowestFloor = Infinity;
+    let allScanResults = [];
+
+    scanPositions.forEach((origin, i) => {
+      floorRay.set(origin, new THREE.Vector3(0, -1, 0));
+      const hits = floorRay.intersectObject(model, true);
+      hits.forEach(h => {
+        allScanResults.push({ y: h.point.y, mesh: h.object.name || '?', scan: i });
+        if (h.point.y < lowestFloor) lowestFloor = h.point.y;
+      });
+    });
+
+    console.log('[Merch] All scan hits:', JSON.stringify(
+      allScanResults.map(h => ({ y: h.y.toFixed(2), mesh: h.mesh, scan: h.scan }))
+    ));
+
+    // Floor = lowest point found (the actual ground plane)
+    // Since we did model.position.y -= scaledBox.min.y, floor should be near y=0
+    floorY = lowestFloor < Infinity ? lowestFloor : 0;
+
+    // Person height ~1.7 units (scaled model is ~30 units, real building ~15m → 1 unit ≈ 0.5m → 1.7 units ≈ 0.85m)
+    // But model scale varies — try 1.7 first, adjust if needed
+    eyeHeight = floorY + 1.7;
+
+    console.log('[Merch] Floor:', floorY.toFixed(2), 'Eye:', eyeHeight.toFixed(2),
+                'ModelSize:', JSON.stringify({x: scaledSize.x.toFixed(1), y: scaledSize.y.toFixed(1), z: scaledSize.z.toFixed(1)}),
+                'Bounds:', JSON.stringify(roomBounds));
+
+    // Position camera
+    camera.position.set(0, eyeHeight, 0);
+    camera.lookAt(3, eyeHeight, 0);
+
+    // Position lights relative to floor (scale-aware)
+    const lightHeight = scaledSize.y * 0.7;
+    skyLight.position.set(0, floorY + lightHeight, 0);
+    skyLight2.position.set(-5, floorY + lightHeight * 0.9, 3);
+    pinkNeon.position.set(4, floorY + lightHeight * 0.5, -2);
+    pinkNeon2.position.set(-3, floorY + lightHeight * 0.4, 5);
+
+    modelLoaded = true;
+    // Expose for debug/testing
+    window._camera = camera;
+    window._scene = scene;
+    window._eyeHeight = eyeHeight;
+    window._floorY = floorY;
+    window._roomBounds = roomBounds;
+    window._teleport = (x, z, lookX, lookZ) => {
+      camera.position.set(x, eyeHeight, z);
+      if (lookX !== undefined) camera.lookAt(lookX, eyeHeight, lookZ || 0);
+    };
+    console.log('[Merch] Model loaded. Room ready. Use _teleport(x,z) to navigate.');
+  },
+  (progress) => {
+    if (progress.total > 0) {
+      const pct = (progress.loaded / progress.total * 100).toFixed(0);
+      document.querySelector('#overlay p').textContent = `Loading ${pct}%...`;
+    }
+  },
+  (error) => {
+    console.error('[Merch] GLB load error:', error);
+    document.querySelector('#overlay p').textContent = 'Error loading model';
+  }
+);
+
+// === CONTROLS ===
+const overlay = document.getElementById('overlay');
+const crosshair = document.getElementById('crosshair');
+const debugEl = document.getElementById('debug');
+
+overlay.addEventListener('click', () => {
+  if (!modelLoaded) return;
+  renderer.domElement.requestPointerLock();
+});
+
+document.addEventListener('pointerlockchange', () => {
+  isLocked = document.pointerLockElement === renderer.domElement;
+  if (isLocked) {
+    overlay.classList.add('hidden');
+    crosshair.style.display = 'block';
+  } else {
+    overlay.classList.remove('hidden');
+    crosshair.style.display = 'none';
+  }
+});
+
+// Mouse look
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+const MOUSE_SENSITIVITY = 0.002;
+const MAX_PITCH = Math.PI / 2 - 0.05;
+
+document.addEventListener('mousemove', (e) => {
+  if (!isLocked) return;
+  euler.setFromQuaternion(camera.quaternion);
+  euler.y -= e.movementX * MOUSE_SENSITIVITY;
+  euler.x -= e.movementY * MOUSE_SENSITIVITY;
+  euler.x = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, euler.x));
+  camera.quaternion.setFromEuler(euler);
+});
+
+// WASD
+const keys = {};
+const MOVE_SPEED = 3.5;
+
+document.addEventListener('keydown', (e) => {
+  keys[e.code] = true;
+  if (e.key === '?') debugEl.style.display = debugEl.style.display === 'none' ? 'block' : 'none';
+});
+document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+function updateMovement(dt) {
+  if (!isLocked || !modelLoaded) return;
+
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0;
+  forward.normalize();
+
+  const right = new THREE.Vector3();
+  right.crossVectors(forward, camera.up).normalize();
+
+  const direction = new THREE.Vector3();
+  if (keys['KeyW'] || keys['ArrowUp']) direction.add(forward);
+  if (keys['KeyS'] || keys['ArrowDown']) direction.sub(forward);
+  if (keys['KeyD'] || keys['ArrowRight']) direction.add(right);
+  if (keys['KeyA'] || keys['ArrowLeft']) direction.sub(right);
+
+  if (direction.lengthSq() > 0) {
+    direction.normalize();
+    camera.position.addScaledVector(direction, MOVE_SPEED * dt);
+  }
+
+  camera.position.x = Math.max(roomBounds.xMin, Math.min(roomBounds.xMax, camera.position.x));
+  camera.position.z = Math.max(roomBounds.zMin, Math.min(roomBounds.zMax, camera.position.z));
+  camera.position.y = eyeHeight;
+}
+
+// === ANIMATE ===
+let lastTime = performance.now();
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+
+  updateMovement(dt);
+
+  if (debugEl.style.display !== 'none') {
+    debugEl.textContent = `cam: x:${camera.position.x.toFixed(2)} y:${camera.position.y.toFixed(2)} z:${camera.position.z.toFixed(2)} | floor:${floorY.toFixed(2)} eye:${eyeHeight.toFixed(2)} | bounds: x[${roomBounds.xMin.toFixed(1)}..${roomBounds.xMax.toFixed(1)}] z[${roomBounds.zMin.toFixed(1)}..${roomBounds.zMax.toFixed(1)}]`;
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+</script>
+</body>
+</html>

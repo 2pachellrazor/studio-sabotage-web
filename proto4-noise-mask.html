@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Prototyp 4 — Noise Mask</title>
+<style>
+  @font-face { font-family: 'Nimbus Sans'; font-weight: 400; src: url('./fonts/NimbusSans-Regular.woff2') format('woff2'); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #fff; overflow: hidden; font-family: 'Nimbus Sans', sans-serif; }
+  canvas#noiseBg { position: fixed; inset: 0; width: 100%; height: 100%; }
+  .vignette {
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 26% 44% at 50% 45%, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.85) 35%, rgba(255,255,255,0.2) 65%, transparent 85%);
+    pointer-events: none; z-index: 2;
+  }
+  .container { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+  .brand { text-align: center; }
+  .brand p { color: rgba(0,0,0,0.85); font-size: 1rem; letter-spacing: 0.35em; text-transform: uppercase; margin-bottom: 1.2rem; }
+  .brand img.logo { height: 200px; width: auto; margin-bottom: 0.8rem; }
+  .brand img.tag { width: 147px; height: auto; }
+  .cta {
+    margin-top: 1rem; font-size: 2rem; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid rgba(245,160,181,0.4); padding: 0.8rem 2.5rem;
+    background: rgba(245,160,181,0.05); backdrop-filter: blur(6px);
+    color: rgba(0,0,0,0.85); cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="noiseBg"></canvas>
+<div class="vignette"></div>
+
+<div class="container">
+  <div class="brand">
+    <p>Studio Sabotage</p>
+    <img class="logo" src="./gallery3d/logo.png" alt="S">
+    <br>
+    <img class="tag" src="./gallery3d/tag.png" alt="tag">
+    <div class="cta">Click to Come in, Bitches.</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('noiseBg');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', () => { resize(); buildMask(); });
+
+// Load snake image as mask source
+const img = new Image();
+img.src = './gallery3d/welcome-bg.webp';
+let maskData = null;
+
+img.onload = buildMask;
+
+function buildMask() {
+  if (!img.complete || img.naturalWidth === 0) return;
+
+  const offscreen = document.createElement('canvas');
+  const octx = offscreen.getContext('2d');
+  offscreen.width = W;
+  offscreen.height = H;
+
+  // Draw image centered, contain-style at 85%
+  const scale = Math.min(W / img.naturalWidth, H / img.naturalHeight) * 0.88;
+  const iw = img.naturalWidth * scale;
+  const ih = img.naturalHeight * scale;
+  const ox = (W - iw) / 2;
+  const oy = (H - ih) / 2;
+
+  octx.drawImage(img, ox, oy, iw, ih);
+  maskData = octx.getImageData(0, 0, W, H);
+}
+
+// Simplex-like noise (fast approximation)
+function noise(x, y, t) {
+  const n1 = Math.sin(x * 0.01 + t) * Math.cos(y * 0.013 + t * 0.7);
+  const n2 = Math.sin(x * 0.023 - t * 0.5) * Math.cos(y * 0.019 + t * 0.3);
+  const n3 = Math.sin((x + y) * 0.007 + t * 0.4) * 0.5;
+  return (n1 + n2 + n3) / 3;
+}
+
+let t = 0;
+const grainCanvas = document.createElement('canvas');
+const grainCtx = grainCanvas.getContext('2d');
+
+function animate() {
+  t += 0.008;
+
+  // Generate animated grain/noise texture
+  grainCanvas.width = W;
+  grainCanvas.height = H;
+  const grainData = grainCtx.createImageData(W, H);
+  const pixels = grainData.data;
+
+  // Step through pixels (skip some for performance)
+  const step = 2;
+  for (let y = 0; y < H; y += step) {
+    for (let x = 0; x < W; x += step) {
+      const i = (y * W + x) * 4;
+
+      // Layered noise for organic feel
+      const n = noise(x, y, t);
+      const grain = (Math.random() - 0.5) * 0.3;
+      let val = (n + grain) * 0.5 + 0.5; // 0-1
+
+      // Apply snake mask — only show noise where snake artwork is dark
+      let maskAlpha = 0;
+      if (maskData) {
+        const mi = i;
+        if (mi < maskData.data.length) {
+          const r = maskData.data[mi], g = maskData.data[mi+1], b = maskData.data[mi+2], a = maskData.data[mi+3];
+          const brightness = (r + g + b) / 3;
+          maskAlpha = a > 0 ? (1 - brightness / 255) : 0;
+          // Boost contrast
+          maskAlpha = Math.pow(maskAlpha, 0.6);
+        }
+      }
+
+      // Color: dark where mask is strong, with subtle warm shift
+      const noiseColor = val * 60; // 0-60 range for subtle variation
+      const r = Math.floor(noiseColor * 0.9);
+      const g = Math.floor(noiseColor * 0.85);
+      const b = Math.floor(noiseColor * 0.95);
+      const alpha = Math.floor(maskAlpha * 200 * (0.7 + val * 0.3));
+
+      // Fill step×step block
+      for (let dy = 0; dy < step && y + dy < H; dy++) {
+        for (let dx = 0; dx < step && x + dx < W; dx++) {
+          const pi = ((y + dy) * W + (x + dx)) * 4;
+          pixels[pi] = r;
+          pixels[pi + 1] = g;
+          pixels[pi + 2] = b;
+          pixels[pi + 3] = alpha;
+        }
+      }
+    }
+  }
+
+  grainCtx.putImageData(grainData, 0, 0);
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.drawImage(grainCanvas, 0, 0);
+
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+</body>
+</html>

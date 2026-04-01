@@ -184,6 +184,14 @@
     --ss-font-primary: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     --ss-wordmark-tracking: 0.35em;
     --ss-wordmark-weight: 400;
+    /* Surface Hierarchy (Stitch DESIGN.md) */
+    --ss-surface-0: #fef9f1;
+    --ss-surface-1: #f8f3eb;
+    --ss-surface-2: #ede7e0;
+    --ss-surface-dim: #ded9d2;
+    --ss-on-surface: #1d1b17;
+    --ss-on-surface-muted: #474747;
+    --ss-ghost-border: rgba(199,199,199,0.1);
   }
 
   /* Nimbus Sans — freier Helvetica-Klon (URW, OFL-lizenziert), lokal als WOFF2 gehostet.
@@ -2085,19 +2093,72 @@ easterEggModal.addEventListener('click', () => {
 
 const productModal = document.createElement('div');
 productModal.id = 'product-modal';
-productModal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999; background:rgba(255,255,255,0.6); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); justify-content:center; align-items:center;';
+productModal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999; background:var(--ss-black); flex-direction:row;';
 productModal.innerHTML = `
-  <div id="product-card" style="position:relative; width:90%; max-width:420px; border-radius:16px; overflow:hidden; background:rgba(255,255,255,0.95); color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; box-shadow:0 20px 60px rgba(0,0,0,0.15), 0 0 30px rgba(245,160,181,0.08);">
-    <button id="product-close" style="position:absolute; top:12px; right:12px; z-index:100000; background:rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.1); color:rgba(0,0,0,0.6); font-size:18px; cursor:pointer; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.25s ease;" onmouseover="this.style.background='rgba(245,160,181,0.1)';this.style.borderColor='rgba(245,160,181,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.06)';this.style.borderColor='rgba(0,0,0,0.1)'">\u2715</button>
-    <img id="product-img" style="width:100%; aspect-ratio:1; object-fit:cover; display:block;" />
-    <div style="padding:24px;">
-      <h2 id="product-title" style="margin:0 0 8px 0; font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:22px; font-weight:400; letter-spacing:0.05em;"></h2>
-      <p id="product-dims" style="margin:0 0 20px 0; font-family:monospace; font-size:0.75rem; color:rgba(0,0,0,0.45); letter-spacing:0.05em;"></p>
-      <a id="product-buy" target="_blank" style="display:flex; align-items:center; justify-content:center; text-decoration:none; padding:14px 24px; border-radius:8px; font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:1rem; font-weight:400; letter-spacing:0.1em; line-height:1.2; text-transform:uppercase; color:rgba(0,0,0,0.85); border:1px solid rgba(245,160,181,0.4); background:rgba(245,160,181,0.05); backdrop-filter:blur(6px); box-shadow:0 0 20px rgba(245,160,181,0.08); transition:all 0.25s ease;" onmouseover="this.style.background='rgba(245,160,181,0.15)';this.style.borderColor='rgba(245,160,181,0.5)';this.style.boxShadow='0 0 30px rgba(245,160,181,0.2)'" onmouseout="this.style.background='rgba(245,160,181,0.05)';this.style.borderColor='rgba(245,160,181,0.4)';this.style.boxShadow='0 0 20px rgba(245,160,181,0.08)'">View in Shop</a>
+  <div id="product-img-wrap" style="width:60%; height:100%; background:var(--ss-surface-2); display:flex; align-items:center; justify-content:center; overflow:hidden;">
+    <img id="product-img" style="width:100%; height:100%; object-fit:cover; display:block;" />
+  </div>
+  <div id="product-info" style="width:40%; height:100%; background:var(--ss-beige); padding:48px; display:flex; flex-direction:column; justify-content:flex-start; overflow-y:auto; font-family:var(--ss-font-primary); color:var(--ss-on-surface);">
+    <button id="product-close" style="display:inline-flex; align-items:center; gap:8px; background:none; border:none; color:var(--ss-on-surface-muted); font-family:var(--ss-font-primary); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; padding:0; margin-bottom:48px; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='1'">\u2190 Return to Gallery</button>
+    <h2 id="product-title" style="margin:0 0 8px 0; font-size:36px; font-weight:800; letter-spacing:-0.01em; text-transform:uppercase; line-height:1.1;"></h2>
+    <p id="product-series" style="margin:0 0 40px 0; font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ss-on-surface-muted);"></p>
+    <div id="product-meta" style="display:flex; flex-direction:column; gap:16px; margin-bottom:40px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid rgba(0,0,0,0.08); padding-bottom:12px;">
+        <span style="font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--ss-on-surface-muted);">Dimensions</span>
+        <span id="product-dims" style="font-size:13px; font-weight:700;"></span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid rgba(0,0,0,0.08); padding-bottom:12px;">
+        <span style="font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--ss-on-surface-muted);">Medium</span>
+        <span style="font-size:13px; font-weight:700;">Oil on Canvas</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid rgba(0,0,0,0.08); padding-bottom:12px;">
+        <span style="font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--ss-on-surface-muted);">Price</span>
+        <span id="product-price" style="font-size:18px; font-weight:800; letter-spacing:-0.02em;"></span>
+      </div>
+    </div>
+    <a id="product-buy" target="_blank" style="display:flex; align-items:center; justify-content:center; text-decoration:none; padding:18px 24px; font-family:var(--ss-font-primary); font-size:13px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ss-black); background:var(--ss-pink); border:none; border-radius:0; cursor:pointer; transition:all 0.3s ease;" onmouseover="this.style.background='var(--ss-black)';this.style.color='var(--ss-pink)'" onmouseout="this.style.background='var(--ss-pink)';this.style.color='var(--ss-black)'">INQUIRE</a>
+    <div id="product-more" style="margin-top:auto; padding-top:48px;">
+      <p style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; font-weight:700; color:rgba(0,0,0,0.3); margin:0 0 16px 0;">MORE WORKS</p>
+      <div id="product-suggestions" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;"></div>
     </div>
   </div>
 `;
 document.body.appendChild(productModal);
+
+function fillSuggestions(currentIdx) {
+  const container = document.getElementById('product-suggestions');
+  container.innerHTML = '';
+  const others = PAINTINGS.map((p, i) => i).filter(i => i !== currentIdx);
+  for (let n = others.length - 1; n > 0; n--) { const j = Math.floor(Math.random() * (n + 1)); [others[n], others[j]] = [others[j], others[n]]; }
+  others.slice(0, 3).forEach(i => {
+    const imgIdx = String(i).padStart(2, '0');
+    const thumb = document.createElement('div');
+    thumb.style.cssText = 'cursor:pointer; overflow:hidden;';
+    thumb.innerHTML = `<img src="${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}" style="width:100%; aspect-ratio:1; object-fit:cover; display:block; transition:transform 0.5s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" /><p style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700; margin:6px 0 0 0;">${PAINTINGS[i].title}</p>`;
+    thumb.addEventListener('click', () => {
+      const p = PAINTINGS[i];
+      document.getElementById('product-img').src = `${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}`;
+      document.getElementById('product-title').textContent = p.title;
+      document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
+      document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
+      document.getElementById('product-buy').href = `https://0u99wg-s5.myshopify.com/products/${p.handle}`;
+      fillSuggestions(i);
+      document.getElementById('product-info').scrollTop = 0;
+    });
+    container.appendChild(thumb);
+  });
+}
+
+/* Mobile: stack vertically */
+const mobileModalCSS = document.createElement('style');
+mobileModalCSS.textContent = `
+  @media (max-width: 768px) {
+    #product-modal { flex-direction: column !important; }
+    #product-img-wrap { width: 100% !important; height: 40vh !important; }
+    #product-info { width: 100% !important; height: 60vh !important; padding: 24px !important; }
+  }
+`;
+document.head.appendChild(mobileModalCSS);
 
 document.getElementById('product-close').addEventListener('click', (e) => {
   e.stopPropagation();
@@ -2365,8 +2426,11 @@ renderer.domElement.addEventListener('touchend', (e) => {
           const imgIdx = String(idx).padStart(2, '0');
           document.getElementById('product-img').src = `${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}`;
           document.getElementById('product-title').textContent = p.title;
-          document.getElementById('product-dims').textContent = `${p.w} × ${p.h} cm · Oil / Acrylic on Canvas`;
+          document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
+          document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
+          document.getElementById('product-series').textContent = 'Oil, Acrylic & Mixed Media on Canvas';
           document.getElementById('product-buy').href = `https://0u99wg-s5.myshopify.com/products/${p.handle}`;
+          fillSuggestions(idx);
           productModal.style.display = 'flex';
           return;
         }
@@ -3134,6 +3198,28 @@ document.getElementById('link-cookie-settings').addEventListener('click', (e) =>
   }
   cookieSettings.classList.add('visible');
 });
+</script>
+
+<!-- Footer -->
+<div id="ss-footer" style="display:none; position:fixed; bottom:0; left:0; width:100%; z-index:50; background:var(--ss-beige); padding:16px 24px; font-family:var(--ss-font-primary); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(0,0,0,0.5); pointer-events:auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; max-width:1440px; margin:0 auto;">
+    <span style="font-weight:700; color:var(--ss-black);">WladislaW — Frankfurt</span>
+    <div style="display:flex; gap:24px;">
+      <a href="https://instagram.com/babydonthvrtme" target="_blank" style="color:rgba(0,0,0,0.5); text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--ss-pink)'" onmouseout="this.style.color='rgba(0,0,0,0.5)'">@babydonthvrtme</a>
+      <span>&copy; 2026</span>
+    </div>
+  </div>
+</div>
+<script>
+// Show footer only after entering gallery
+const ssFooter = document.getElementById('ss-footer');
+const showFooterObserver = setInterval(() => {
+  if (entered && !gridActive && productModal.style.display !== 'flex') {
+    ssFooter.style.display = 'block';
+  } else if (productModal.style.display === 'flex' || gridActive) {
+    ssFooter.style.display = 'none';
+  }
+}, 500);
 </script>
 </body>
 </html>

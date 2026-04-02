@@ -1644,8 +1644,6 @@ function switchRoom(target) {
       camera.position.set(-8.5, GALLERY_EYE_HEIGHT, 3.0);
       camera.lookAt(0, GALLERY_EYE_HEIGHT, 3.0);
 
-      navGallery.classList.add('active');
-      navAbout.classList.remove('active');
       resumeText.textContent = isTouchDevice ? 'Tap to resume, motherfucker' : 'Click to resume, motherfucker';
       controlsHintText.textContent = isTouchDevice
         ? 'Drag to look \u00b7 Pinch to move \u00b7 Double-tap to interact'
@@ -1668,8 +1666,6 @@ function switchRoom(target) {
       camera.position.set(-2.2, bedroomEyeHeight, 0.5);
       camera.lookAt(0, bedroomEyeHeight, 0.5);
 
-      navAbout.classList.add('active');
-      navGallery.classList.remove('active');
       resumeText.textContent = isTouchDevice ? 'Tap to keep looking' : 'Click to keep looking';
       controlsHintText.textContent = isTouchDevice
         ? 'Drag to look \u00b7 Pinch to move \u00b7 Double-tap hotspot'
@@ -1719,7 +1715,7 @@ document.getElementById('header-flash-static').addEventListener('click', goToLan
 // ─── 2D Grid View ───
 const gridView = document.getElementById('grid-view');
 const gridContainer = document.getElementById('grid-container');
-// navGallery already declared above
+// flatWorldBtn already declared above
 
 function buildGrid() {
   if (gridContainer.children.length > 0) return;

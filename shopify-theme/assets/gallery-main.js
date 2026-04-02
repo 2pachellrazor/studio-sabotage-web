@@ -328,59 +328,68 @@ gltfLoader.load(
     galleryGroup.add(signMesh);
     doorMeshes.push(signMesh);
 
-    // ─── Merch Room portal — same wall as About door, opposite side (x≈-10, z≈-3) ───
-    const merchDoor = new THREE.Mesh(
+    // ─── Sub Rosa portal — same wall as About door, opposite side (x≈-10, z≈-3) ───
+    const subrosaDoor = new THREE.Mesh(
       new THREE.PlaneGeometry(2.5, 3.5),
       new THREE.MeshBasicMaterial({ visible: false })
     );
-    merchDoor.position.set(-10.0, 1.8, -3.0);
-    merchDoor.rotation.y = Math.PI / 2;
-    merchDoor.userData.isDoor = true;
-    merchDoor.userData.doorTarget = 'merch';
-    galleryGroup.add(merchDoor);
-    doorMeshes.push(merchDoor);
+    subrosaDoor.position.set(-10.0, 1.8, -3.0);
+    subrosaDoor.rotation.y = Math.PI / 2;
+    subrosaDoor.userData.isDoor = true;
+    subrosaDoor.userData.doorTarget = 'subrosa';
+    galleryGroup.add(subrosaDoor);
+    doorMeshes.push(subrosaDoor);
 
-    // Merch door neon sign
-    const merchSignCanvas = document.createElement('canvas');
-    merchSignCanvas.width = 1024;
-    merchSignCanvas.height = 256;
-    const mCtx = merchSignCanvas.getContext('2d');
-    mCtx.textAlign = 'center';
+    // Sub Rosa neon sign — blue theme matching the room
+    const srSignCanvas = document.createElement('canvas');
+    srSignCanvas.width = 1024;
+    srSignCanvas.height = 256;
+    const srCtx = srSignCanvas.getContext('2d');
+    srCtx.textAlign = 'center';
     for (let blur = 70; blur >= 5; blur -= 5) {
-      mCtx.shadowColor = '#FF3E8E';
-      mCtx.shadowBlur = blur;
-      mCtx.fillStyle = blur > 25 ? 'rgba(255,62,142,0.12)' : 'rgba(255,62,142,0.5)';
-      mCtx.font = '700 64px monospace';
-      mCtx.textBaseline = 'middle';
-      mCtx.fillText('SHOP', 512, 80);
-      mCtx.font = '700 52px monospace';
-      mCtx.fillText('\u2193', 512, 170);
+      srCtx.shadowColor = '#4488cc';
+      srCtx.shadowBlur = blur;
+      srCtx.fillStyle = blur > 25 ? 'rgba(68,136,204,0.12)' : 'rgba(68,136,204,0.5)';
+      srCtx.font = '700 56px monospace';
+      srCtx.textBaseline = 'middle';
+      srCtx.fillText('SUB ROSA', 512, 80);
+      srCtx.font = '700 52px monospace';
+      srCtx.fillText('\u2193', 512, 170);
     }
-    mCtx.shadowColor = '#FF3E8E';
-    mCtx.shadowBlur = 12;
-    mCtx.fillStyle = '#ffffff';
-    mCtx.font = '700 64px monospace';
-    mCtx.textBaseline = 'middle';
-    mCtx.fillText('SHOP', 512, 80);
-    mCtx.font = '700 52px monospace';
-    mCtx.fillText('\u2193', 512, 170);
+    srCtx.shadowColor = '#4488cc';
+    srCtx.shadowBlur = 12;
+    srCtx.fillStyle = '#ffffff';
+    srCtx.font = '700 56px monospace';
+    srCtx.textBaseline = 'middle';
+    srCtx.fillText('SUB ROSA', 512, 80);
+    srCtx.font = '700 52px monospace';
+    srCtx.fillText('\u2193', 512, 170);
 
-    const merchSignTex = new THREE.CanvasTexture(merchSignCanvas);
-    const merchSignMesh = new THREE.Mesh(
+    const srSignTex = new THREE.CanvasTexture(srSignCanvas);
+    const srSignMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(2.4, 0.6),
-      new THREE.MeshBasicMaterial({ map: merchSignTex, transparent: true, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ map: srSignTex, transparent: true, side: THREE.DoubleSide })
     );
-    merchSignMesh.position.set(-9.85, 3.5, -3.0);
-    merchSignMesh.rotation.y = Math.PI / 2;
-    merchSignMesh.userData.isDoor = true;
-    merchSignMesh.userData.doorTarget = 'merch';
-    galleryGroup.add(merchSignMesh);
-    doorMeshes.push(merchSignMesh);
+    srSignMesh.position.set(-9.85, 3.5, -3.0);
+    srSignMesh.rotation.y = Math.PI / 2;
+    srSignMesh.userData.isDoor = true;
+    srSignMesh.userData.doorTarget = 'subrosa';
+    galleryGroup.add(srSignMesh);
+    doorMeshes.push(srSignMesh);
 
-    // Merch door pink light
-    const merchDoorLight = new THREE.PointLight(0xF5A0B5, 0.8, 6, 2);
-    merchDoorLight.position.set(-9.3, 1.5, -3.0);
-    galleryGroup.add(merchDoorLight);
+    // Sub Rosa door blue light
+    const subrosaDoorLight = new THREE.PointLight(0x4488cc, 1.0, 8, 2);
+    subrosaDoorLight.position.set(-9.5, 1.5, -3.0);
+    galleryGroup.add(subrosaDoorLight);
+
+    // Blue glow on the floor near Sub Rosa door
+    const srGlowMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.5, 3.0),
+      new THREE.MeshBasicMaterial({ color: 0x4488cc, transparent: true, opacity: 0.08, side: THREE.DoubleSide })
+    );
+    srGlowMesh.rotation.x = -Math.PI / 2;
+    srGlowMesh.position.set(-9.5, 0.02, -3.0);
+    galleryGroup.add(srGlowMesh);
   },
   (progress) => {
     if (progress.total > 0) {
@@ -1257,7 +1266,8 @@ renderer.domElement.addEventListener('touchend', (e) => {
       if (doorMeshes.length > 0) {
         const doorHits = raycaster.intersectObjects(doorMeshes, false);
         if (doorHits.length > 0 && doorHits[0].distance < 4) {
-          switchRoom(currentRoom === 'gallery' ? 'bedroom' : 'gallery');
+          const doorTarget = doorHits[0].object.userData.doorTarget;
+          switchRoom(doorTarget || (currentRoom === 'gallery' ? 'bedroom' : 'gallery'));
           return;
         }
       }
@@ -1401,13 +1411,14 @@ function updateGalleryRaycast() {
   );
   if (doorHits.length > 0) {
     const doorData = doorHits[0].object.userData;
-    if (doorData.doorTarget === 'merch') return; // merch not yet available
     hoveredDoor = doorData.doorTarget || true;
     hoveredPainting = null;
     infoEl.classList.remove('visible');
-    hotspotHint.textContent = doorData.doorTarget === 'bedroom'
-      ? '[ Enter my Bedroom ] \u2014 Click'
-      : '[ Enter ] \u2014 Click';
+    const hintMap = {
+      bedroom: '[ Enter my Bedroom ] \u2014 Click',
+      subrosa: '[ Sub Rosa ] \u2014 Click'
+    };
+    hotspotHint.textContent = hintMap[doorData.doorTarget] || '[ Enter ] \u2014 Click';
     hotspotHint.classList.add('visible');
     renderer.domElement.style.cursor = 'pointer';
     return;
@@ -1615,8 +1626,12 @@ function switchRoom(target) {
   if (target === currentRoom) return;
   if (switching) return;
 
-  // Merch room — not yet available
-  if (target === 'merch') {
+  // Sub Rosa — separate page, fade + redirect
+  if (target === 'subrosa') {
+    switching = true;
+    document.exitPointerLock();
+    transitionEl.style.opacity = '1';
+    setTimeout(() => { window.location.href = '/pages/gallery3d'; }, 500);
     return;
   }
 

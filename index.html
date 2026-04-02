@@ -70,12 +70,18 @@
   }
 
   #brand-name {
-    color: var(--ss-white);
-    font-size: 1rem;
+    font-size: clamp(1.2rem, 2.8vw, 2rem);
     letter-spacing: 0.35em;
     text-transform: uppercase;
-    margin-bottom: 1.2rem;
+    margin-bottom: 1.5rem;
     font-weight: 400;
+    padding-bottom: 0.4em;
+    line-height: 1.4;
+    background: linear-gradient(to bottom, #FFFFFF 80%, transparent 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   #logo3d {

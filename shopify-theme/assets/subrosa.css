@@ -74,6 +74,15 @@ canvas { display: block; }
   font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase;
   color: rgba(255,255,255,0.4);
 }
+#overlay .bar-track {
+  width: 240px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px;
+  margin-bottom: 16px;
+}
+#overlay .bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, rgba(68,136,204,0.3), #4488cc, rgba(68,136,204,0.3));
+  border-radius: 1px; transition: width 0.3s ease;
+}
 
 /* Crosshair */
 #crosshair {

@@ -154,7 +154,8 @@ function createPaintingMesh(texture, p, position, rotationY) {
 // === LOAD GLB ===
 const headerEl = document.getElementById('gallery-header');
 const overlayEl = document.getElementById('overlay');
-const loadingText = overlayEl.querySelector('p');
+const loadBar = document.getElementById('load-bar');
+const loadStatus = document.getElementById('load-status');
 
 gltfLoader.load(
   window.SS_ASSETS.manufactoryGlb,
@@ -199,7 +200,11 @@ gltfLoader.load(
     pinkNeon.position.set(4, floorY + 5, -2);
 
     modelLoaded = true;
-    loadingText.textContent = isTouchDevice ? 'Tap to enter' : 'Click to enter';
+    loadBar.style.width = '100%';
+    setTimeout(() => {
+      document.querySelector('.bar-track').style.opacity = '0';
+    }, 400);
+    loadStatus.textContent = isTouchDevice ? 'Tap to enter' : 'Click to enter';
 
     // === PAINTING PLACEMENT ===
     const paintingY = eyeHeight - 0.5;
@@ -228,12 +233,15 @@ gltfLoader.load(
   },
   (progress) => {
     if (progress.total > 0) {
-      loadingText.textContent = `Loading ${(progress.loaded / progress.total * 100).toFixed(0)}%...`;
+      const pct = Math.min(95, Math.round(progress.loaded / progress.total * 95));
+      loadBar.style.width = pct + '%';
+      loadStatus.textContent = `Loading ${pct}%`;
     }
   },
   (error) => {
     console.error('[Sub Rosa] GLB load error:', error);
-    loadingText.textContent = 'Error loading model';
+    loadBar.style.background = '#cc4444';
+    loadStatus.textContent = 'Error loading model';
   }
 );
 

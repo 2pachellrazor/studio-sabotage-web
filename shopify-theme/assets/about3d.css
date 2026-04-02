@@ -271,6 +271,8 @@ canvas { display: block; }
   letter-spacing: 0.1em; text-transform: uppercase;
 }
 
+canvas { touch-action: none; }
+
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
   #info-panel {

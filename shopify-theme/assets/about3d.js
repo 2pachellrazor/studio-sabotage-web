@@ -262,10 +262,41 @@ function finishLoading() {
     setTimeout(() => {
       loadingEl.style.display = 'none';
       headerEl.classList.add('visible');
-      renderer.domElement.requestPointerLock();
+      if (isTouchDevice) {
+        isTouchActive = true;
+        crosshairEl.style.display = 'none';
+        controlsHint.style.display = 'block';
+      } else {
+        renderer.domElement.requestPointerLock();
+      }
+    }, 700);
+  });
+
+  // Touch tap on loading screen
+  loadingEl.addEventListener('touchend', (e) => {
+    if (entered || !roomLoaded) return;
+    e.preventDefault();
+    entered = true;
+    isTouchActive = true;
+    loadingEl.classList.add('fade-enter');
+    setTimeout(() => {
+      loadingEl.style.display = 'none';
+      headerEl.classList.add('visible');
+      crosshairEl.style.display = 'none';
+      controlsHint.style.display = 'block';
     }, 700);
   });
 }
+
+// ── Touch Detection ──
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+let isTouchActive = false;
+let touchLook = { active: false, id: null, lastX: 0, lastY: 0 };
+let touchPinch = { active: false, startDist: 0, lastDist: 0, lastMidX: 0, lastMidY: 0 };
+let touchMoveZ = 0;
+let touchMoveX = 0;
+const TOUCH_LOOK_SENSITIVITY = 0.003;
+const TOUCH_MOVE_SENSITIVITY = 0.012;
 
 // ─── Pointer Lock ────────────────────────────────────────────────────
 let isLocked = false;
@@ -325,13 +356,111 @@ document.addEventListener('keydown', (e) => {
 });
 document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
+// ── Touch Controls ──────────────────────────────────────────────
+renderer.domElement.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  isTouchActive = true;
+
+  if (e.touches.length === 1 && !touchPinch.active) {
+    const t = e.touches[0];
+    touchLook = { active: true, id: t.identifier, lastX: t.clientX, lastY: t.clientY };
+
+    // Resume from overlay via touch
+    if (!isLocked && !overlayEl.classList.contains('hidden')) {
+      overlayEl.classList.add('hidden');
+      crosshairEl.style.display = 'none';
+      controlsHint.style.display = 'block';
+    }
+  }
+
+  if (e.touches.length === 2) {
+    touchLook.active = false;
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const midX = (t0.clientX + t1.clientX) / 2;
+    const midY = (t0.clientY + t1.clientY) / 2;
+    touchPinch = { active: true, startDist: dist, lastDist: dist, lastMidX: midX, lastMidY: midY };
+  }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+
+  if (e.touches.length === 1 && touchLook.active) {
+    const t = e.touches[0];
+    if (t.identifier === touchLook.id) {
+      const dx = t.clientX - touchLook.lastX;
+      const dy = t.clientY - touchLook.lastY;
+      touchLook.lastX = t.clientX;
+      touchLook.lastY = t.clientY;
+
+      euler.setFromQuaternion(camera.quaternion);
+      euler.y -= dx * TOUCH_LOOK_SENSITIVITY;
+      euler.x -= dy * TOUCH_LOOK_SENSITIVITY;
+      euler.x = Math.max(-MAX_PITCH, Math.min(MAX_PITCH, euler.x));
+      camera.quaternion.setFromEuler(euler);
+    }
+  }
+
+  if (e.touches.length === 2 && touchPinch.active) {
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const midX = (t0.clientX + t1.clientX) / 2;
+
+    touchMoveZ = (dist - touchPinch.lastDist) * TOUCH_MOVE_SENSITIVITY;
+    touchMoveX = -(midX - touchPinch.lastMidX) * TOUCH_MOVE_SENSITIVITY * 0.5;
+
+    touchPinch.lastDist = dist;
+    touchPinch.lastMidX = midX;
+  }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchend', (e) => {
+  if (e.touches.length < 2) { touchPinch.active = false; touchMoveZ = 0; touchMoveX = 0; }
+  if (e.touches.length === 0) { touchLook.active = false; }
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    touchLook = { active: true, id: t.identifier, lastX: t.clientX, lastY: t.clientY };
+  }
+});
+
+// Double-tap to interact with hotspots
+let lastTapTime = 0;
+renderer.domElement.addEventListener('touchend', (e) => {
+  if (e.changedTouches.length !== 1) return;
+  const now = Date.now();
+  if (now - lastTapTime < 300 && isTouchActive) {
+    const touch = e.changedTouches[0];
+    const x = (touch.clientX / window.innerWidth) * 2 - 1;
+    const y = -(touch.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+    const hsHits = raycaster.intersectObjects(hotspotSpheres, false);
+    if (hsHits.length > 0) {
+      const idx = hsHits[0].object.userData.hotspotIndex;
+      if (idx !== undefined) openPanel(idx);
+    }
+  }
+  lastTapTime = now;
+});
+
+// Mobile: adapt controls hint + resume overlay text
+if (isTouchDevice) {
+  controlsHint.querySelector('span').textContent = 'Drag to look \u00b7 Pinch to move \u00b7 Double-tap hotspot';
+  overlayEl.querySelector('.resume-text').textContent = 'Tap to keep looking';
+}
+
+// Prevent browser zoom gestures
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('gesturechange', (e) => e.preventDefault());
+document.addEventListener('gestureend', (e) => e.preventDefault());
+
 const MOVE_SPEED = 2.8;
 const direction = new THREE.Vector3();
 const forward = new THREE.Vector3();
 const right = new THREE.Vector3();
 
 function updateMovement(dt) {
-  if (!isLocked) return;
+  if (!isLocked && !isTouchActive) return;
 
   direction.set(0, 0, 0);
 
@@ -345,6 +474,10 @@ function updateMovement(dt) {
   if (keys['KeyS'] || keys['ArrowDown'])   direction.sub(forward);
   if (keys['KeyA'] || keys['ArrowLeft'])   direction.sub(right);
   if (keys['KeyD'] || keys['ArrowRight'])  direction.add(right);
+
+  // Touch pinch → forward/backward + strafe
+  if (Math.abs(touchMoveZ) > 0.001) direction.addScaledVector(forward, touchMoveZ);
+  if (Math.abs(touchMoveX) > 0.001) direction.addScaledVector(right, touchMoveX);
 
   if (direction.lengthSq() > 0) {
     direction.normalize();
@@ -361,7 +494,7 @@ let hoveredHotspot = -1;
 let activeHotspot = -1;
 
 function updateHotspotRaycast() {
-  if (!isLocked || !roomLoaded) return;
+  if ((!isLocked && !isTouchActive) || !roomLoaded) return;
 
   raycaster.setFromCamera(screenCenter, camera);
   const hits = raycaster.intersectObjects(hotspotSpheres);

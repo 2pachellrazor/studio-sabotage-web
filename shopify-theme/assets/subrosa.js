@@ -28,6 +28,16 @@ let roomBounds = { xMin: -10, xMax: 10, zMin: -10, zMax: 10 };
 const paintingMeshes = [];
 let hoveredPainting = null;
 
+// ── Touch Detection ──
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+let isTouchActive = false;
+let touchLook = { active: false, id: null, lastX: 0, lastY: 0 };
+let touchPinch = { active: false, startDist: 0, lastDist: 0, lastMidX: 0, lastMidY: 0 };
+let touchMoveZ = 0;
+let touchMoveX = 0;
+const TOUCH_LOOK_SENSITIVITY = 0.003;
+const TOUCH_MOVE_SENSITIVITY = 0.012;
+
 // === SCENE ===
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050508);
@@ -189,7 +199,7 @@ gltfLoader.load(
     pinkNeon.position.set(4, floorY + 5, -2);
 
     modelLoaded = true;
-    loadingText.textContent = 'Click to enter';
+    loadingText.textContent = isTouchDevice ? 'Tap to enter' : 'Click to enter';
 
     // === PAINTING PLACEMENT ===
     const paintingY = eyeHeight - 0.5;
@@ -263,8 +273,108 @@ const keys = {};
 document.addEventListener('keydown', (e) => { keys[e.code] = true; });
 document.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
+// ── Touch Controls ──────────────────────────────────────────────
+renderer.domElement.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  isTouchActive = true;
+
+  if (e.touches.length === 1 && !touchPinch.active) {
+    const t = e.touches[0];
+    touchLook = { active: true, id: t.identifier, lastX: t.clientX, lastY: t.clientY };
+
+    // First tap enters the room (no pointer lock on mobile)
+    if (!isLocked && !overlayEl.classList.contains('hidden')) {
+      if (!modelLoaded) return;
+      overlayEl.classList.add('hidden');
+      crosshair.style.display = 'none';
+      document.getElementById('controls-hint').style.display = 'block';
+    }
+  }
+
+  if (e.touches.length === 2) {
+    touchLook.active = false;
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const midX = (t0.clientX + t1.clientX) / 2;
+    const midY = (t0.clientY + t1.clientY) / 2;
+    touchPinch = { active: true, startDist: dist, lastDist: dist, lastMidX: midX, lastMidY: midY };
+  }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+
+  if (e.touches.length === 1 && touchLook.active) {
+    const t = e.touches[0];
+    if (t.identifier === touchLook.id) {
+      const dx = t.clientX - touchLook.lastX;
+      const dy = t.clientY - touchLook.lastY;
+      touchLook.lastX = t.clientX;
+      touchLook.lastY = t.clientY;
+
+      euler.setFromQuaternion(camera.quaternion);
+      euler.y -= dx * TOUCH_LOOK_SENSITIVITY;
+      euler.x -= dy * TOUCH_LOOK_SENSITIVITY;
+      euler.x = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, euler.x));
+      camera.quaternion.setFromEuler(euler);
+    }
+  }
+
+  if (e.touches.length === 2 && touchPinch.active) {
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+    const midX = (t0.clientX + t1.clientX) / 2;
+
+    touchMoveZ = (dist - touchPinch.lastDist) * TOUCH_MOVE_SENSITIVITY;
+    touchMoveX = -(midX - touchPinch.lastMidX) * TOUCH_MOVE_SENSITIVITY * 0.5;
+
+    touchPinch.lastDist = dist;
+    touchPinch.lastMidX = midX;
+  }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchend', (e) => {
+  if (e.touches.length < 2) { touchPinch.active = false; touchMoveZ = 0; touchMoveX = 0; }
+  if (e.touches.length === 0) { touchLook.active = false; }
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    touchLook = { active: true, id: t.identifier, lastX: t.clientX, lastY: t.clientY };
+  }
+});
+
+// Double-tap to show painting info
+let lastTapTime = 0;
+renderer.domElement.addEventListener('touchend', (e) => {
+  if (e.changedTouches.length !== 1) return;
+  const now = Date.now();
+  if (now - lastTapTime < 300 && isTouchActive) {
+    const touch = e.changedTouches[0];
+    const x = (touch.clientX / window.innerWidth) * 2 - 1;
+    const y = -(touch.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+    const hits = raycaster.intersectObjects(paintingMeshes, false);
+    if (hits.length > 0 && hits[0].object.userData.paintingTitle) {
+      const data = hits[0].object.userData;
+      infoEl.textContent = data.paintingTitle + ` \u2014 ${data.paintingData.w} \u00d7 ${data.paintingData.h} cm`;
+      infoEl.classList.add('visible');
+      setTimeout(() => infoEl.classList.remove('visible'), 3000);
+    }
+  }
+  lastTapTime = now;
+});
+
+// Mobile: adapt controls hint text
+if (isTouchDevice) {
+  document.getElementById('controls-hint').textContent = 'Drag to look \u00b7 Pinch to move \u00b7 Double-tap painting';
+}
+
+// Prevent browser zoom gestures
+document.addEventListener('gesturestart', (e) => e.preventDefault());
+document.addEventListener('gesturechange', (e) => e.preventDefault());
+document.addEventListener('gestureend', (e) => e.preventDefault());
+
 function updateMovement(dt) {
-  if (!isLocked || !modelLoaded) return;
+  if ((!isLocked && !isTouchActive) || !modelLoaded) return;
   const forward = new THREE.Vector3();
   camera.getWorldDirection(forward);
   forward.y = 0; forward.normalize();
@@ -276,6 +386,10 @@ function updateMovement(dt) {
   if (keys['KeyD'] || keys['ArrowRight']) dir.add(right);
   if (keys['KeyA'] || keys['ArrowLeft']) dir.sub(right);
 
+  // Touch pinch → forward/backward + strafe
+  if (Math.abs(touchMoveZ) > 0.001) dir.addScaledVector(forward, touchMoveZ);
+  if (Math.abs(touchMoveX) > 0.001) dir.addScaledVector(right, touchMoveX);
+
   if (dir.lengthSq() > 0) {
     dir.normalize();
     camera.position.addScaledVector(dir, 3.5 * dt);
@@ -286,7 +400,7 @@ function updateMovement(dt) {
 }
 
 function updateRaycast() {
-  if (!isLocked) return;
+  if (!isLocked && !isTouchActive) return;
   raycaster.setFromCamera(screenCenter, camera);
   const hits = raycaster.intersectObjects(paintingMeshes, false);
   if (hits.length > 0 && hits[0].object.userData.paintingTitle) {

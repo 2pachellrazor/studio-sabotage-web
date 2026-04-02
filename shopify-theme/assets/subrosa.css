@@ -116,6 +116,8 @@ canvas { display: block; }
 #page-footer a { color: rgba(255,255,255,0.15); text-decoration: none; transition: color 0.2s; }
 #page-footer a:hover { color: rgba(255,255,255,0.4); }
 
+canvas { touch-action: none; }
+
 @media (max-width: 768px) {
   #gallery-header { padding: 12px 16px; }
 }

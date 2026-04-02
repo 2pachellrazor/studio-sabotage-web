@@ -1955,6 +1955,15 @@ function closeLegal(id) {
   document.getElementById(id + '-close').classList.remove('visible');
 }
 
+// Auto-open legal overlay if URL hash matches (e.g. /pages/gallery#impressum)
+if (window.location.hash) {
+  const target = window.location.hash.substring(1);
+  if (['impressum', 'datenschutz', 'agb'].includes(target)) {
+    openLegal(target);
+    history.replaceState(null, '', window.location.pathname);
+  }
+}
+
 // Impressum accessible via grid footer and overlay close buttons
 document.querySelectorAll('[data-legal="impressum"]').forEach(el => {
   el.addEventListener('click', (e) => { e.preventDefault(); openLegal('impressum'); });

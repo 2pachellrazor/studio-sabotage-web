@@ -148,8 +148,7 @@ const hotspotHint = document.getElementById('hotspot-hint');
 const panel       = document.getElementById('info-panel');
 const hotspotContainer = document.getElementById('hotspot-container');
 const transitionEl = document.getElementById('room-transition');
-const navGallery  = document.getElementById('nav-gallery');
-const navAbout    = document.getElementById('nav-about');
+const flatWorldBtn = document.getElementById('flat-world-btn');
 
 const scene    = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
@@ -568,6 +567,7 @@ function finishGalleryLoading() {
     setTimeout(() => {
       loadingEl.style.display = 'none';
       headerEl.classList.add('visible');
+      flatWorldBtn.style.display = 'block';
       if (isTouchDevice) {
         isTouchActive = true;
         isLocked = true;
@@ -1706,15 +1706,6 @@ function switchRoom(target) {
   }, 400);
 }
 
-navGallery.addEventListener('click', (e) => {
-  e.preventDefault();
-  switchRoom('gallery');
-});
-navAbout.addEventListener('click', (e) => {
-  e.preventDefault();
-  switchRoom('bedroom');
-});
-
 // Logo + Header Flash → navigate to landing page
 function goToLanding() {
   window.location.href = '/';
@@ -1765,16 +1756,18 @@ function showGrid() {
   gridActive = true;
   gridView.classList.add('visible');
   gridView.scrollTop = 0;
-  navGallery.textContent = 'Go Back Inside';
+  flatWorldBtn.textContent = '\u00d7';
+  flatWorldBtn.title = 'Zurueck zur 3D-Ansicht';
 }
 
 function hideGrid() {
   gridActive = false;
   gridView.classList.remove('visible');
-  navGallery.textContent = 'Flat World';
+  flatWorldBtn.textContent = '\u22a2';
+  flatWorldBtn.title = 'Flat World — 2D Ansicht';
 }
 
-navGallery.addEventListener('click', (e) => {
+flatWorldBtn.addEventListener('click', (e) => {
   e.preventDefault();
   if (gridActive) {
     hideGrid();
@@ -1964,9 +1957,9 @@ function closeLegal(id) {
   document.getElementById(id + '-close').classList.remove('visible');
 }
 
-document.getElementById('nav-impressum').addEventListener('click', (e) => {
-  e.preventDefault();
-  openLegal('impressum');
+// Impressum accessible via grid footer and overlay close buttons
+document.querySelectorAll('[data-legal="impressum"]').forEach(el => {
+  el.addEventListener('click', (e) => { e.preventDefault(); openLegal('impressum'); });
 });
 document.getElementById('impressum-close').addEventListener('click', () => closeLegal('impressum'));
 document.getElementById('impressum-overlay').addEventListener('click', (e) => {

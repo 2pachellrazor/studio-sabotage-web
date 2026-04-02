@@ -124,7 +124,19 @@ canvas { display: block; }
   font-weight: 400;
 }
 #gallery-header nav a:hover { color: rgba(0,0,0,0.85); }
-#gallery-header nav a.active { color: #d4326f; }
+#gallery-header nav a.active { color: #F5A0B5; }
+#gallery-header nav .nav-sep { color: rgba(0,0,0,0.15); pointer-events: none; font-size: 0.6rem; }
+
+#page-footer {
+  position: fixed; bottom: 0; left: 0; width: 100%; z-index: 10;
+  padding: 12px 24px; text-align: center;
+  font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(0,0,0,0.25); pointer-events: auto;
+}
+#page-footer .nav-sep { color: rgba(0,0,0,0.15); font-size: 0.5rem; margin: 0 6px; }
+#page-footer a { color: rgba(0,0,0,0.25); text-decoration: none; transition: color 0.2s; }
+#page-footer a:hover { color: rgba(0,0,0,0.5); }
 #gallery-header nav a.ig-link { display: flex; align-items: center; gap: 4px; }
 #gallery-header nav a.ig-link svg { width: 16px; height: 16px; fill: currentColor; }
 

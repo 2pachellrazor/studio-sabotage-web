@@ -215,18 +215,17 @@
     <img src="{{ 'logo.png' | asset_url }}" style="height:65px; width:auto; opacity:0.9;" alt="S"><span style="font-size:0.85rem; letter-spacing:0.45em;">Studio Sabotage</span>
   </a>
   <nav>
-    <a href="#" id="nav-gallery" class="active">Flat World</a>
-    <span style="color:rgba(0,0,0,0.15);">|</span>
-    <a href="#" onclick="return false;" style="opacity:0.5; cursor:default;">Merch</a>
-    <span style="color:rgba(0,0,0,0.15);">|</span>
-    <a href="#" id="nav-about">About</a>
-    <span style="color:rgba(0,0,0,0.15);">|</span>
-    <a href="#" id="nav-impressum">Impressum</a>
-    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="/pages/gallery" class="active">Gallery</a>
+    <span class="nav-sep">&middot;</span>
+    <a href="/pages/gallery3d">Paintings</a>
+    <span class="nav-sep">&middot;</span>
+    <a href="/pages/about">About</a>
+    <span class="nav-sep">&middot;</span>
     <a href="https://instagram.com/babydonthvrtme" target="_blank" class="ig-link">
       <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
     </a>
   </nav>
+  <button id="flat-world-btn" title="Flat World — 2D Ansicht" style="display:none;">&#8862;</button>
   <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to top, rgba(245,160,181,0.16) 0%, transparent 70%); pointer-events:none;"></div>
   <div style="position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg, transparent, rgba(245,160,181,0.3), transparent);"></div>
   <img id="header-flash" src="{{ 'header-flash.webp' | asset_url }}" style="display:none; position:absolute; top:28px; left:50%; transform:translateX(-50%); width:440px; opacity:0.85; filter:contrast(1.8) brightness(0.08); pointer-events:auto; cursor:pointer; z-index:61;" alt="">
@@ -332,7 +331,7 @@
   <div class="grid-spacer"></div>
   <div class="grid-container" id="grid-container"></div>
   <div class="grid-footer">
-    <p>&copy; 2025 WladislaW Müller · <a href="https://instagram.com/babydonthvrtme" target="_blank">@babydonthvrtme</a></p>
+    <p>&copy; 2026 WladislaW Müller · <a href="https://instagram.com/babydonthvrtme" target="_blank">@babydonthvrtme</a> · <a href="#" data-legal="impressum">Impressum</a></p>
   </div>
 </div>
 

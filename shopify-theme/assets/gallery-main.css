@@ -206,8 +206,19 @@
   }
   #gallery-header nav a:hover { color: rgba(0,0,0,0.85); }
   #gallery-header nav a.active { color: #F5A0B5; }
+  #gallery-header nav .nav-sep { color: rgba(0,0,0,0.15); pointer-events: none; font-size: 0.6rem; }
   #gallery-header nav a.ig-link { display: flex; align-items: center; gap: 4px; }
   #gallery-header nav a.ig-link svg { width: 16px; height: 16px; fill: currentColor; }
+
+  #flat-world-btn {
+    position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
+    background: none; border: 1px solid rgba(0,0,0,0.15); color: rgba(0,0,0,0.5);
+    font-size: 1.1rem; width: 32px; height: 32px; cursor: pointer;
+    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    transition: all 0.2s ease; pointer-events: auto; display: none;
+    line-height: 1;
+  }
+  #flat-world-btn:hover { color: rgba(0,0,0,0.85); border-color: rgba(0,0,0,0.3); }
 
   .hotspot-marker {
     position: absolute; z-index: 40;

@@ -1,0 +1,97 @@
+{% layout 'blank' %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="{{ 'favicon.ico' | asset_url }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ 'favicon-32x32.png' | asset_url }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ 'favicon-192x192.png' | asset_url }}">
+<link rel="apple-touch-icon" href="{{ 'apple-touch-icon.png' | asset_url }}">
+<title>Studio Sabotage</title>
+<meta name="description" content="Studio Sabotage — 3D Gallery by Wladi Mueller. Walk through the virtual gallery and explore original paintings.">
+<meta property="og:title" content="Studio Sabotage — Gallery">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="{{ 'gallery3d.css' | asset_url }}">
+<script>
+  window.SS_ASSETS = {
+    assetBase:      {{ '' | asset_url | split: '/' | pop | join: '/' | append: '/' | json }},
+    galleryGlb:     {{ 'gallery.glb' | asset_url | json }},
+    headerFlashPng: {{ 'header-flash.png' | asset_url | json }},
+    logoPng:        {{ 'logo.png' | asset_url | json }},
+    tagPng:         {{ 'tag.png' | asset_url | json }}
+  };
+</script>
+
+<!-- Gallery Header -->
+<div id="gallery-header">
+  <a href="/pages/gallery" class="header-logo">
+    <img src="{{ 'logo.png' | asset_url }}" style="height:65px; width:auto; opacity:0.9;" alt="S"><span style="font-size:0.85rem; letter-spacing:0.45em;">Studio Sabotage</span>
+  </a>
+  <nav>
+    <a href="/pages/gallery" class="active">Gallery</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="#" onclick="return false;" style="opacity:0.5; cursor:default;">Merch</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="/pages/about">About</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="https://instagram.com/babydonthvrtme" target="_blank" class="ig-link">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+    </a>
+  </nav>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to top, rgba(255,62,142,0.16) 0%, transparent 70%); pointer-events:none;"></div>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg, transparent, rgba(255,62,142,0.3), transparent);"></div>
+  <img id="header-flash" src="{{ 'header-flash.png' | asset_url }}" style="display:none; position:absolute; top:30px; left:50%; transform:translateX(-50%); width:90%; opacity:0; transition:opacity 0.3s ease; pointer-events:none; z-index:61;" alt="">
+</div>
+
+<!-- Loading screen -->
+<div id="loading">
+  <div style="display:flex; flex-direction:column; align-items:center; position:relative; z-index:2; margin-top:-3rem;">
+
+    <!-- Center: Brand Block -->
+    <div id="brand-block" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:1.5rem 2rem; border-radius:8px; transition: all 0.3s ease;">
+      <p style="color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:0.7rem; letter-spacing:0.25em; text-transform:uppercase; margin-bottom:1.2rem;">Studio Sabotage</p>
+      <canvas id="logo3d" width="380" height="632" style="width:190px; height:316px; margin-bottom:0.8rem;"></canvas>
+      <img src="{{ 'tag.png' | asset_url }}" style="width:147px; height:auto; opacity:0.85;" alt="tag">
+    </div>
+
+    <!-- CTA as one line below brand block -->
+    <p id="cta-line" style="color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:2rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.25s ease; margin-top:0.5rem; text-align:center; border:1px solid rgba(255,62,142,0.4); padding:0.8rem 2.5rem; line-height:1.2; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); background:rgba(255,62,142,0.05); box-shadow:0 0 20px rgba(255,62,142,0.08);"><span id="cta-left">Click to </span> <span id="cta-right">Come in, Bitches.</span></p>
+  </div>
+
+  <div class="bar-track"><div class="bar-fill" id="load-bar"></div></div>
+  <div class="status" id="load-status">initializing...</div>
+</div>
+
+<!-- Resume overlay (shows after ESC) -->
+<div id="overlay" class="hidden">
+  <span class="resume-text">Click to resume, motherfucker</span>
+</div>
+
+<!-- Crosshair -->
+<div id="crosshair" style="display:none;"></div>
+
+<!-- Controls hint (visible during pointer lock) -->
+<div id="controls-hint" style="display:none; position:fixed; bottom:28px; left:50%; transform:translateX(-50%); z-index:50; pointer-events:none; text-align:center;">
+  <span style="color:rgba(255,62,142,0.7); font-size:0.85rem; font-family:monospace; letter-spacing:0.12em; text-transform:uppercase;">WASD move &middot; Double-click teleport &middot; Click painting to buy &middot; ESC exit</span>
+</div>
+
+<!-- Teleport indicator -->
+<div id="teleport-ring" style="display:none; position:fixed; pointer-events:none; z-index:35; width:20px; height:20px; border:2px solid #FF3E8E; border-radius:50%; transform:translate(-50%,-50%); animation: teleportPulse 0.4s ease-out forwards;"></div>
+
+<!-- Painting info -->
+<div id="painting-info">
+  <div class="title" id="info-title"></div>
+  <div class="price" id="info-price"></div>
+  <div class="hint">click to view</div>
+</div>
+
+{% raw %}
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+{% endraw %}
+
+<script type="module" src="{{ 'gallery3d.js' | asset_url }}"></script>

@@ -1,0 +1,46 @@
+{% layout 'blank' %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="{{ 'favicon.ico' | asset_url }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ 'favicon-32x32.png' | asset_url }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ 'favicon-192x192.png' | asset_url }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ 'apple-touch-icon.png' | asset_url }}">
+<title>Studio Sabotage — WladislaW</title>
+<meta name="description" content="Studio Sabotage — WladislaW Müllers Kunst begehbar im Browser. 3D Gallery, Originale, Graffiti.">
+<meta property="og:title" content="Studio Sabotage">
+<meta property="og:description" content="WladislaW Müllers Kunst begehbar im Browser.">
+<meta property="og:image" content="https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_02.jpg?v=1774065825">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://studiosabotage.com">
+<link rel="canonical" href="https://studiosabotage.com">
+<link rel="stylesheet" href="{{ 'landing.css' | asset_url }}">
+
+<canvas id="particleBg"></canvas>
+<div id="vignette"></div>
+
+<div id="content">
+  <div id="brand-block">
+    <p id="brand-name">Studio Sabotage</p>
+    <canvas id="logo3d" width="380" height="632"></canvas>
+    <img id="tag-img" src="{{ 'tag.png' | asset_url }}" alt="tag">
+  </div>
+  <p id="parental-advisory">Parental Advisory — Explicit Content</p>
+  <a id="cta" href="/pages/gallery">Enter Anyway</a>
+</div>
+
+<div id="footer">
+  <span style="font-weight:700; color:rgba(255,255,255,0.5);">WladislaW — Frankfurt</span>
+  <div style="display:flex; gap:24px;">
+    <a href="https://instagram.com/babydonthvrtme" target="_blank">@babydonthvrtme</a>
+    <span>&copy; 2026</span>
+  </div>
+</div>
+
+<script>
+  window.SS_ASSETS = {
+    logoPng: '{{ "logo.png" | asset_url }}',
+    snakeVertical: '{{ "snake-vertical.png" | asset_url }}',
+    tagPng: '{{ "tag.png" | asset_url }}'
+  };
+</script>
+<script src="{{ 'landing.js' | asset_url }}"></script>

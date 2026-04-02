@@ -1,0 +1,486 @@
+{% layout 'blank' %}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="{{ 'favicon.ico' | asset_url }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ 'favicon-32x32.png' | asset_url }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ 'favicon-192x192.png' | asset_url }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ 'apple-touch-icon.png' | asset_url }}">
+<title>Studio Sabotage — WladislaW Müllers Kunst begehbar im Browser</title>
+<meta name="description" content="WladislaW Müllers Kunst begehbar im Browser. 15 Gemälde, 13 Graffiti-Pieces, ein begehbares Zimmer.">
+<meta property="og:title" content="Studio Sabotage">
+<meta property="og:description" content="WladislaW Müllers Kunst begehbar im Browser.">
+<meta property="og:image" content="https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_02.jpg?v=1774065825">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://studiosabotage.com">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://studiosabotage.com">
+<meta name="robots" content="index, follow">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "name": "Studio Sabotage",
+      "url": "https://studiosabotage.com",
+      "description": "WladislaW Müllers Kunst begehbar im Browser. 3D Gallery mit 15 Gemälden, 13 Graffiti-Pieces und einem begehbaren Zimmer.",
+      "inLanguage": "de"
+    },
+    {
+      "@type": "Person",
+      "@id": "#artist",
+      "name": "WladislaW Müller",
+      "alternateName": "WladislaW",
+      "url": "https://studiosabotage.com",
+      "sameAs": [
+        "https://instagram.com/babydonthvrtme"
+      ],
+      "jobTitle": "Künstler",
+      "knowsAbout": ["Malerei", "Graffiti", "Expressionismus", "Mixed Media"],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Schwarzgasse 15",
+        "addressLocality": "Wächtersbach",
+        "postalCode": "63607",
+        "addressCountry": "DE"
+      }
+    },
+    {
+      "@type": "ArtGallery",
+      "name": "Studio Sabotage",
+      "url": "https://studiosabotage.com",
+      "description": "Virtuelle 3D-Kunstgalerie von WladislaW Müller — begehbar im Browser",
+      "founder": { "@id": "#artist" },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Originalkunstwerke",
+        "numberOfItems": 15
+      }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "Luchador Mask",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "80 cm" },
+      "height": { "@type": "Distance", "name": "80 cm" },
+      "dateCreated": "2019",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_00.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "The Kiss",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "120 cm" },
+      "height": { "@type": "Distance", "name": "60 cm" },
+      "dateCreated": "2021",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_01.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "Selbstportrait mit Trommel",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "100 cm" },
+      "height": { "@type": "Distance", "name": "120 cm" },
+      "dateCreated": "2023",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_02.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "ВОЛК (Wolf)",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "70 cm" },
+      "height": { "@type": "Distance", "name": "90 cm" },
+      "dateCreated": "2020",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_03.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "Purple Figure",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "80 cm" },
+      "height": { "@type": "Distance", "name": "100 cm" },
+      "dateCreated": "2021",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_04.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "Reclining Figure",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "80 cm" },
+      "height": { "@type": "Distance", "name": "80 cm" },
+      "dateCreated": "2020",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_07.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "Extended Hand",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "80 cm" },
+      "height": { "@type": "Distance", "name": "80 cm" },
+      "dateCreated": "2020",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_08.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "Fist",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "80 cm" },
+      "height": { "@type": "Distance", "name": "80 cm" },
+      "dateCreated": "2020",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_09.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    },
+    {
+      "@type": "VisualArtwork",
+      "name": "Hand on Black",
+      "creator": { "@id": "#artist" },
+      "artMedium": "Oil, acrylic & mixed media on canvas",
+      "width": { "@type": "Distance", "name": "80 cm" },
+      "height": { "@type": "Distance", "name": "80 cm" },
+      "dateCreated": "2019",
+      "artform": "Painting",
+      "image": "https://cdn.shopify.com/s/files/1/1013/4650/9142/files/painting_10.jpg?v=1774065825",
+      "offers": { "@type": "Offer", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" }
+    }
+  ]
+}
+</script>
+
+<link rel="stylesheet" href="{{ 'gallery-main.css' | asset_url }}">
+
+<noscript>
+<div style="max-width:800px; margin:40px auto; padding:20px; font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; color:#222; line-height:1.8;">
+  <h1>Studio Sabotage — WladislaW Müller</h1>
+  <p>Virtuelle 3D-Kunstgalerie — begehbar im Browser. Diese Seite benötigt JavaScript und einen modernen Browser.</p>
+
+  <h2>Über den Künstler</h2>
+  <p>WladislaW Müller ist ein in Wächtersbach (Hessen) lebender Künstler. Seine Arbeiten bewegen sich zwischen figurativer Malerei, Graffiti und Mixed Media. Er hat in Gießen studiert und ein Semester in Istanbul gemalt. Stationen: Zürich, Berlin, Istanbul, Kirgistan.</p>
+
+  <h2>Kunstwerke</h2>
+  <ul>
+    <li><strong>Luchador Mask</strong> — Öl, Acryl & Mixed Media auf Leinwand, 80×80 cm, 2019</li>
+    <li><strong>The Kiss</strong> — Öl, Acryl & Mixed Media auf Leinwand, 120×60 cm, 2021</li>
+    <li><strong>Selbstportrait mit Trommel</strong> — Öl, Acryl & Mixed Media auf Leinwand, 100×120 cm, 2023</li>
+    <li><strong>ВОЛК (Wolf)</strong> — Öl, Acryl & Mixed Media auf Leinwand, 70×90 cm, 2020</li>
+    <li><strong>Purple Figure</strong> — Öl, Acryl & Mixed Media auf Leinwand, 80×100 cm, 2021</li>
+    <li><strong>Pink Faces</strong> — Öl, Acryl & Mixed Media auf Leinwand, 60×120 cm, 2019</li>
+    <li><strong>Dark Portrait</strong> — Öl, Acryl & Mixed Media auf Leinwand, 80×80 cm, 2019</li>
+    <li><strong>Reclining Figure</strong> — Öl, Acryl & Mixed Media auf Leinwand, 80×80 cm, 2020</li>
+    <li><strong>Extended Hand</strong> — Öl, Acryl & Mixed Media auf Leinwand, 80×80 cm, 2020</li>
+    <li><strong>Fist</strong> — Öl, Acryl & Mixed Media auf Leinwand, 80×80 cm, 2020</li>
+    <li><strong>Hand on Black</strong> — Öl, Acryl & Mixed Media auf Leinwand, 80×80 cm, 2019</li>
+    <li><strong>Pink Rabbit</strong> — Öl, Acryl & Mixed Media auf Leinwand, 60×80 cm, 2021</li>
+    <li><strong>Rabbit II</strong> — Öl, Acryl & Mixed Media auf Leinwand, 60×80 cm, 2021</li>
+    <li><strong>Figure on Pink</strong> — Öl, Acryl & Mixed Media auf Leinwand, 60×80 cm, 2022</li>
+    <li><strong>Rabbit on Yellow</strong> — Öl, Acryl & Mixed Media auf Leinwand, 60×80 cm, 2021</li>
+  </ul>
+
+  <h2>Graffiti — Hall of Fame</h2>
+  <p>13 Graffiti-Pieces auf der Stirnwand der virtuellen Galerie. Spray-Paint-Ästhetik mit Custom GLSL Shader.</p>
+
+  <h2>Das Zimmer</h2>
+  <p>Ein mit dem iPhone gescannter realer Raum — das Schlafzimmer des Künstlers. Interaktive Hotspots erzählen von Computer, Büchern, Kleidung, Pflanzen, Fahrrad, Dachschräge, Bett und einer orangen Lampe.</p>
+
+  <h2>Kontakt</h2>
+  <p>Wladislaw Müller · Schwarzgasse 15, 63607 Wächtersbach · <a href="mailto:wladi.mueller@gmail.com">wladi.mueller@gmail.com</a> · <a href="https://instagram.com/babydonthvrtme">@babydonthvrtme</a></p>
+</div>
+</noscript>
+
+<div id="gallery-header">
+  <a href="/" class="header-logo">
+    <img src="{{ 'logo.png' | asset_url }}" style="height:65px; width:auto; opacity:0.9;" alt="S"><span style="font-size:0.85rem; letter-spacing:0.45em;">Studio Sabotage</span>
+  </a>
+  <nav>
+    <a href="#" id="nav-gallery" class="active">Flat World</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="#" onclick="return false;" style="opacity:0.5; cursor:default;">Merch</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="#" id="nav-about">About</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="#" id="nav-impressum">Impressum</a>
+    <span style="color:rgba(0,0,0,0.15);">|</span>
+    <a href="https://instagram.com/babydonthvrtme" target="_blank" class="ig-link">
+      <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+    </a>
+  </nav>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to top, rgba(245,160,181,0.16) 0%, transparent 70%); pointer-events:none;"></div>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg, transparent, rgba(245,160,181,0.3), transparent);"></div>
+  <img id="header-flash" src="{{ 'header-flash.webp' | asset_url }}" style="display:none; position:absolute; top:28px; left:50%; transform:translateX(-50%); width:440px; opacity:0.85; filter:contrast(1.8) brightness(0.08); pointer-events:auto; cursor:pointer; z-index:61;" alt="">
+  <canvas id="header-flash-static" style="display:none; position:absolute; top:28px; left:50%; transform:translateX(-50%); width:440px; opacity:0; filter:contrast(1.8) brightness(0.08); pointer-events:auto; cursor:pointer; z-index:62;"></canvas>
+</div>
+
+<div id="loading">
+  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; z-index:99998; width:100%; height:100%;">
+    <p style="color:rgba(255,255,255,0.4); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:0.8rem; letter-spacing:0.35em; text-transform:uppercase; margin-bottom:2rem;">STUDIO SABOTAGE</p>
+    <div class="bar-track"><div class="bar-fill" id="load-bar"></div></div>
+    <div class="status" id="load-status">initializing...</div>
+  </div>
+</div>
+
+
+<div id="overlay" class="hidden">
+  <span class="resume-text" id="resume-text">Click to resume, motherfucker</span>
+</div>
+
+<div id="crosshair" style="display:none;"></div>
+
+<div id="controls-hint" style="display:none; position:fixed; bottom:28px; left:50%; transform:translateX(-50%); z-index:50; pointer-events:none; text-align:center;">
+  <span id="controls-hint-text" style="color:rgba(255,62,142,0.7); font-size:0.85rem; font-family:monospace; letter-spacing:0.12em; text-transform:uppercase;">WASD move · Double-click teleport · Click painting for details</span>
+</div>
+
+<div id="teleport-ring" style="display:none; position:fixed; pointer-events:none; z-index:35; width:20px; height:20px; border:2px solid #FF3E8E; border-radius:50%; transform:translate(-50%,-50%); animation: teleportPulse 0.4s ease-out forwards;"></div>
+
+<div id="painting-info">
+  <div class="title" id="info-title"></div>
+  <div class="price" id="info-price"></div>
+  <div class="hint">&rarr; click to view &larr;</div>
+</div>
+
+<div id="hotspot-hint"></div>
+
+<div id="info-panel" style="display:none;">
+  <button class="close-btn" id="close-panel-btn">&times;</button>
+  <div class="panel-header">
+    <div class="panel-category" id="panel-category"></div>
+    <div class="panel-title" id="panel-title"></div>
+  </div>
+  <div class="panel-body">
+    <div class="panel-text" id="panel-text"></div>
+    <div class="panel-detail" id="panel-detail"></div>
+  </div>
+  <div class="close-hint">ESC or click to close</div>
+</div>
+
+<div id="hotspot-container" style="display:none; position:fixed;inset:0;z-index:40;pointer-events:none;"></div>
+
+<div id="cookie-banner">
+  <div class="cookie-text">
+    Ich verwende Cookies auf meiner Website, um zu verstehen, wie du diese nutzt. Indem du auf „Zustimmen" klickst, stimmst du deren Verwendung zu. Ich würde dir allerdings empfehlen auf "Alle ablehnen" zu klicken und dich über die Verwendung deiner Daten im Internet zu informieren. <a href="#" id="cookie-ds-link">Datenschutzerklärung</a>
+  </div>
+  <div class="cookie-buttons">
+    <button class="cookie-btn-settings" id="cookie-open-settings">Einstellungen</button>
+    <button class="cookie-btn-reject" id="cookie-reject">Alle ablehnen</button>
+    <button class="cookie-btn-accept" id="cookie-accept">Zustimmen</button>
+  </div>
+  <button class="cookie-close" id="cookie-close">&times;</button>
+</div>
+
+<div id="cookie-settings">
+  <div class="settings-card">
+    <h2>Cookie-Einstellungen</h2>
+    <div class="cookie-option">
+      <label>
+        <strong>Technisch notwendig</strong>
+        <div class="option-desc">Warenkorb, Session, Sicherheit. Ohne die geht nichts.</div>
+      </label>
+      <div class="cookie-toggle">
+        <input type="checkbox" checked disabled>
+        <span class="slider"></span>
+      </div>
+    </div>
+    <div class="cookie-option">
+      <label>
+        <strong>Analyse</strong>
+        <div class="option-desc">Hilft mir zu verstehen, wie Besucher die Seite nutzen.</div>
+      </label>
+      <div class="cookie-toggle">
+        <input type="checkbox" id="cookie-analytics">
+        <span class="slider"></span>
+      </div>
+    </div>
+    <div class="cookie-option">
+      <label>
+        <strong>Marketing</strong>
+        <div class="option-desc">Instagram, Meta — um dir relevante Inhalte zu zeigen.</div>
+      </label>
+      <div class="cookie-toggle">
+        <input type="checkbox" id="cookie-marketing">
+        <span class="slider"></span>
+      </div>
+    </div>
+    <button class="settings-save" id="cookie-save-settings">Einstellungen speichern</button>
+  </div>
+</div>
+
+<div id="room-transition" style="position:fixed;inset:0;z-index:250;background:#000000;opacity:0;pointer-events:none;transition:opacity 0.4s ease;"></div>
+
+<div id="grid-view">
+  <div class="grid-spacer"></div>
+  <div class="grid-container" id="grid-container"></div>
+  <div class="grid-footer">
+    <p>&copy; 2025 WladislaW Müller · <a href="https://instagram.com/babydonthvrtme" target="_blank">@babydonthvrtme</a></p>
+  </div>
+</div>
+
+<div id="impressum-overlay" class="legal-overlay">
+  <div class="legal-content">
+    <h1>Impressum</h1>
+    <h2>Angaben gemäß § 5 TMG</h2>
+    <p>Wladislaw Müller<br>Schwarzgasse 15<br>63607 Wächtersbach</p>
+    <h2>Kontakt</h2>
+    <p>E-Mail: wladi.mueller@gmail.com</p>
+    <h2>Umsatzsteuer</h2>
+    <p>Kleinunternehmer gemäß § 19 UStG. Es wird keine Umsatzsteuer ausgewiesen.</p>
+    <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+    <p>Wladislaw Müller<br>Schwarzgasse 15<br>63607 Wächtersbach</p>
+    <h2>Haftungsausschluss</h2>
+    <p>Die Inhalte dieser Seite wurden mit Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte kann jedoch keine Gewähr übernommen werden.</p>
+    <h2>Urheberrecht</h2>
+    <p>Alle auf dieser Website dargestellten Kunstwerke, Fotografien und Texte unterliegen dem Urheberrecht von Wladislaw Müller. Jede Verwertung außerhalb der Grenzen des Urheberrechtsgesetzes bedarf der Zustimmung des Urhebers.</p>
+    <h2>3D-Modell Attribution</h2>
+    <p>Das 3D-Galeriemodell basiert auf einem Werk von Sketchfab und wird unter der <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener" style="color:#F5A0B5;">Creative Commons Attribution 4.0</a> Lizenz verwendet.</p>
+    <h2>Online-Streitbeilegung</h2>
+    <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener" style="color:#F5A0B5;">https://ec.europa.eu/consumers/odr/</a>. Wir sind nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+  </div>
+</div>
+<button id="impressum-close" class="legal-close">&times;</button>
+
+<div id="datenschutz-overlay" class="legal-overlay">
+  <div class="legal-content">
+    <h1>Datenschutzerklärung</h1>
+    <h2>1. Verantwortlicher</h2>
+    <p>Wladislaw Müller<br>Schwarzgasse 15<br>63607 Wächtersbach<br>E-Mail: wladi.mueller@gmail.com</p>
+    <h2>2. Hosting</h2>
+    <p>Diese Website wird über Shopify Inc. (Kanada/USA) gehostet. Beim Aufruf der Website werden automatisch Informationen (z.B. IP-Adresse, Browsertyp, Zeitpunkt des Zugriffs) an den Server übermittelt und in Server-Logfiles gespeichert. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Es besteht ein Angemessenheitsbeschluss der EU-Kommission für Kanada.</p>
+    <h2>3. CDN-Dienste</h2>
+    <p>Für die 3D-Darstellung wird die Bibliothek Three.js über jsDelivr (CDN) eingebunden. Dabei kann Ihre IP-Adresse an diesen Dienst übermittelt werden. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.</p>
+    <h2>4. Cookies</h2>
+    <p>Diese Website verwendet Cookies. Dabei unterscheiden wir:</p>
+    <p><strong>Technisch notwendige Cookies:</strong> Diese sind für den Betrieb des Shops erforderlich (z.B. Warenkorb, Session). Sie werden ohne Einwilligung gesetzt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.</p>
+    <p><strong>Optionale Cookies:</strong> Cookies für Analyse oder Marketing werden nur mit Ihrer ausdrücklichen Einwilligung gesetzt (Art. 6 Abs. 1 lit. a DSGVO). Sie können Ihre Einwilligung jederzeit widerrufen.</p>
+    <h2>5. Shop-Funktionen</h2>
+    <p>Wenn Sie über den integrierten Shop Kunstwerke erwerben, verarbeiten wir die zur Vertragsabwicklung erforderlichen Daten (Name, Adresse, Zahlungsdaten). Die Zahlungsabwicklung erfolgt über den jeweiligen Zahlungsdienstleister. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+    <h2>6. Keine Analyse-Tools</h2>
+    <p>Diese Website verwendet derzeit keine Analyse- oder Tracking-Tools.</p>
+    <h2>7. Externe Links</h2>
+    <p>Diese Website enthält Links zu Instagram (Meta Platforms Ireland Ltd.) und zum Shopify-Shop. Beim Klick auf diese Links gelten die Datenschutzbestimmungen der jeweiligen Anbieter.</p>
+    <h2>8. Ihre Rechte</h2>
+    <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Wenden Sie sich dazu an: wladi.mueller@gmail.com</p>
+    <h2>9. Beschwerderecht</h2>
+    <p>Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu beschweren. Zuständig ist der Hessische Beauftragte für Datenschutz und Informationsfreiheit.</p>
+  </div>
+</div>
+<button id="datenschutz-close" class="legal-close">&times;</button>
+
+<div id="agb-overlay" class="legal-overlay">
+  <div class="legal-content">
+    <h1>AGB & Widerrufsbelehrung</h1>
+
+    <h2>&sect; 1 Geltungsbereich</h2>
+    <p>Diese Allgemeinen Geschäftsbedingungen gelten für alle Bestellungen, die über den Online-Shop von Wladislaw Müller (nachfolgend „Verkäufer") getätigt werden.</p>
+
+    <h2>&sect; 2 Vertragspartner</h2>
+    <p>Wladislaw Müller<br>Schwarzgasse 15<br>63607 Wächtersbach<br>E-Mail: wladi.mueller@gmail.com</p>
+
+    <h2>&sect; 3 Vertragsschluss</h2>
+    <p>Die Darstellung der Kunstwerke im Online-Shop stellt kein rechtlich bindendes Angebot dar, sondern eine Aufforderung zur Bestellung. Durch das Absenden der Bestellung geben Sie ein verbindliches Angebot zum Kauf ab. Der Vertrag kommt zustande, wenn der Verkäufer die Bestellung durch eine Auftragsbestätigung per E-Mail annimmt.</p>
+
+    <h2>&sect; 4 Preise und Zahlung</h2>
+    <p>Alle Preise verstehen sich in Euro inklusive der gesetzlichen Mehrwertsteuer. Es wird keine Umsatzsteuer ausgewiesen (Kleinunternehmer gemäß § 19 UStG). Versandkosten werden gesondert ausgewiesen und vom Käufer getragen, sofern nicht anders vereinbart.</p>
+
+    <h2>&sect; 5 Lieferung</h2>
+    <p>Bei Originalkunstwerken handelt es sich um Unikate. Die Lieferzeit wird individuell vereinbart. Der Versand erfolgt versichert. Das Risiko des zufälligen Untergangs geht mit Übergabe an das Transportunternehmen auf den Käufer über, sofern der Käufer Unternehmer ist. Bei Verbrauchern geht die Gefahr erst mit Übergabe der Ware über.</p>
+
+    <h2>&sect; 6 Eigentumsvorbehalt</h2>
+    <p>Die Ware bleibt bis zur vollständigen Bezahlung Eigentum des Verkäufers.</p>
+
+    <h2>&sect; 7 Gewährleistung</h2>
+    <p>Es gelten die gesetzlichen Gewährleistungsrechte. Bei Originalkunstwerken handelt es sich um Unikate — leichte Abweichungen von der Online-Darstellung (Farbwiedergabe, Textur) stellen keinen Mangel dar.</p>
+
+    <h2>&sect; 8 Haftung</h2>
+    <p>Der Verkäufer haftet unbeschränkt bei Vorsatz und grober Fahrlässigkeit. Bei leichter Fahrlässigkeit haftet der Verkäufer nur bei Verletzung wesentlicher Vertragspflichten und begrenzt auf den vorhersehbaren, vertragstypischen Schaden.</p>
+
+    <h2>&sect; 9 Urheberrecht</h2>
+    <p>Der Verkauf eines Originalkunstwerks überträgt das Eigentum am physischen Werk, nicht die Urheberrechte. Das Recht zur Vervielfältigung, Veröffentlichung und kommerziellen Nutzung der Abbildung verbleibt beim Künstler.</p>
+
+    <h2>&sect; 10 Schlussbestimmungen</h2>
+    <p>Es gilt das Recht der Bundesrepublik Deutschland. Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung bereit: <a href="https://ec.europa.eu/consumers/odr" target="_blank" style="color:#F5A0B5;">ec.europa.eu/consumers/odr</a>. Der Verkäufer ist nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+
+    <hr style="border:none; border-top:1px solid rgba(245,160,181,0.2); margin:2.5rem 0;">
+
+    <h1>Widerrufsbelehrung</h1>
+
+    <h2>Widerrufsrecht</h2>
+    <p>Sie haben das Recht, binnen 14 Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Die Widerrufsfrist beträgt 14 Tage ab dem Tag, an dem Sie oder ein von Ihnen benannter Dritter die Ware in Besitz genommen haben.</p>
+    <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie Wladislaw Müller, Schwarzgasse 15, 63607 Wächtersbach, E-Mail: wladi.mueller@gmail.com, mittels einer eindeutigen Erklärung (z.B. per E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren.</p>
+    <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+
+    <h2>Folgen des Widerrufs</h2>
+    <p>Wenn Sie diesen Vertrag widerrufen, hat der Verkäufer Ihnen alle Zahlungen, die er von Ihnen erhalten hat, einschließlich der Lieferkosten (mit Ausnahme der zusätzlichen Kosten, die sich daraus ergeben, dass Sie eine andere Art der Lieferung als die angebotene, günstigste Standardlieferung gewählt haben), unverzüglich und spätestens binnen 14 Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf eingegangen ist.</p>
+    <p>Der Verkäufer kann die Rückzahlung verweigern, bis er die Ware zurückerhalten hat oder bis Sie den Nachweis erbracht haben, dass Sie die Ware zurückgesandt haben.</p>
+    <p>Sie haben die Ware unverzüglich und in jedem Fall spätestens binnen 14 Tagen ab dem Tag, an dem Sie über den Widerruf informiert haben, zurückzusenden. Sie tragen die unmittelbaren Kosten der Rücksendung der Ware.</p>
+    <p><strong>Hinweis:</strong> Bei Originalkunstwerken bitten wir Sie, die Ware sachgemäß und in der Originalverpackung zurückzusenden. Für Beschädigungen durch unsachgemäßen Transport haften Sie.</p>
+  </div>
+</div>
+<button id="agb-close" class="legal-close">&times;</button>
+
+<!-- Footer -->
+<div id="ss-footer" style="display:none; position:fixed; bottom:0; left:0; width:100%; z-index:50; background:var(--ss-beige); padding:16px 24px; font-family:var(--ss-font-primary); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(0,0,0,0.5); pointer-events:auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; max-width:1440px; margin:0 auto;">
+    <span style="font-weight:700; color:var(--ss-black);">WladislaW — Frankfurt</span>
+    <div style="display:flex; gap:24px;">
+      <a href="https://instagram.com/babydonthvrtme" target="_blank" style="color:rgba(0,0,0,0.5); text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--ss-pink)'" onmouseout="this.style.color='rgba(0,0,0,0.5)'">@babydonthvrtme</a>
+      <span>&copy; 2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- SS_ASSETS: All local asset URLs for the Three.js app -->
+<script>
+  (function() {
+    var _ref = {{ 'gallery.glb' | asset_url | json }};
+    var _base = _ref.substring(0, _ref.lastIndexOf('/') + 1);
+    window.SS_ASSETS = {
+      galleryGlb:    _ref,
+      roomGlb:       {{ 'room.glb' | asset_url | json }},
+      headerFlash:   {{ 'header-flash.webp' | asset_url | json }},
+      logoPng:       {{ 'logo.png' | asset_url | json }},
+      brandmarkBlack:{{ 'brandmark-black-1024.png' | asset_url | json }},
+      tagBlack:      {{ 'tag-black-512.png' | asset_url | json }},
+      assetBase:     _base
+    };
+  })();
+</script>
+
+<!-- Three.js Import Map -->
+{% raw %}
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+{% endraw %}
+
+<!-- Main 3D Gallery App -->
+<script type="module" src="{{ 'gallery-main.js' | asset_url }}"></script>
+
+<!-- Footer visibility controller (needs access to module vars via window) -->
+<script src="{{ 'gallery-main-config.js' | asset_url }}"></script>
+

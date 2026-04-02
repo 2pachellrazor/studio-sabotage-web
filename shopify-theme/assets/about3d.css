@@ -132,11 +132,11 @@ canvas { display: block; }
   padding: 12px 24px; text-align: center;
   font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
   font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(0,0,0,0.25); pointer-events: auto;
+  color: rgba(0,0,0,0.4); pointer-events: auto;
 }
-#page-footer .nav-sep { color: rgba(0,0,0,0.15); font-size: 0.5rem; margin: 0 6px; }
-#page-footer a { color: rgba(0,0,0,0.25); text-decoration: none; transition: color 0.2s; }
-#page-footer a:hover { color: rgba(0,0,0,0.5); }
+#page-footer .nav-sep { color: rgba(0,0,0,0.2); font-size: 0.5rem; margin: 0 6px; }
+#page-footer a { color: rgba(0,0,0,0.4); text-decoration: none; transition: color 0.2s; }
+#page-footer a:hover { color: rgba(0,0,0,0.6); }
 #gallery-header nav a.ig-link { display: flex; align-items: center; gap: 4px; }
 #gallery-header nav a.ig-link svg { width: 16px; height: 16px; fill: currentColor; }
 

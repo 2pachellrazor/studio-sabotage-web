@@ -52,8 +52,9 @@
   let particleAnimId = null;
 
   function pResize() {
-    pW = pCanvas.width = window.innerWidth * 2;
-    pH = pCanvas.height = window.innerHeight * 2;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    pW = pCanvas.width = window.innerWidth * dpr;
+    pH = pCanvas.height = window.innerHeight * dpr;
     pCanvas.style.width = window.innerWidth + 'px';
     pCanvas.style.height = window.innerHeight + 'px';
   }
@@ -166,4 +167,13 @@
       pCtx.fillRect(p.x, p.y, p.size, p.size);
     }
   }
+
+  // Pause animation when tab is hidden (battery/performance)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (particleAnimId) { cancelAnimationFrame(particleAnimId); particleAnimId = null; }
+    } else {
+      if (!particleAnimId) particleAnimId = requestAnimationFrame(pAnimate);
+    }
+  });
 })();

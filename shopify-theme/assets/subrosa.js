@@ -451,14 +451,17 @@ function animate() {
   updateMovement(dt);
   updateRaycast();
 
-  // Debug position display
+  // Debug position display (mesh cache for performance)
   if (debugMode) {
     debugEl.textContent = `cam: x:${camera.position.x.toFixed(2)}  y:${camera.position.y.toFixed(2)}  z:${camera.position.z.toFixed(2)}`;
+    if (!window._debugMeshCache || window._debugMeshCacheDirty) {
+      window._debugMeshCache = [];
+      scene.traverse(c => { if (c.isMesh) window._debugMeshCache.push(c); });
+      window._debugMeshCacheDirty = false;
+    }
     const debugRay = new THREE.Raycaster();
     debugRay.setFromCamera(screenCenter, camera);
-    const allMeshes = [];
-    scene.traverse(c => { if (c.isMesh) allMeshes.push(c); });
-    const targetHits = debugRay.intersectObjects(allMeshes);
+    const targetHits = debugRay.intersectObjects(window._debugMeshCache);
     if (targetHits.length > 0) {
       const p = targetHits[0].point;
       const name = targetHits[0].object.userData.paintingTitle || targetHits[0].object.name || '(mesh)';

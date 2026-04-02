@@ -636,14 +636,17 @@ function animate() {
   updateHotspotRaycast();
   updateHotspotPositions();
 
-  // Debug position display
+  // Debug position display (mesh cache for performance)
   if (debugMode && isLocked) {
     debugEl.textContent = `cam: x:${camera.position.x.toFixed(2)}  y:${camera.position.y.toFixed(2)}  z:${camera.position.z.toFixed(2)}`;
 
+    if (!window._debugMeshCache || window._debugMeshCacheDirty) {
+      window._debugMeshCache = [];
+      scene.traverse(child => { if (child.isMesh && child.material.visible !== false) window._debugMeshCache.push(child); });
+      window._debugMeshCacheDirty = false;
+    }
     targetRaycaster.setFromCamera(screenCenter, camera);
-    const allMeshes = [];
-    scene.traverse(child => { if (child.isMesh && child.material.visible !== false) allMeshes.push(child); });
-    const targetHits = targetRaycaster.intersectObjects(allMeshes);
+    const targetHits = targetRaycaster.intersectObjects(window._debugMeshCache);
     if (targetHits.length > 0) {
       const p = targetHits[0].point;
       debugTarget.textContent = `target: x:${p.x.toFixed(2)}  y:${p.y.toFixed(2)}  z:${p.z.toFixed(2)}`;

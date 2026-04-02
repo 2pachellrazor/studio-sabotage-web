@@ -1399,11 +1399,11 @@ function updateGalleryRaycast() {
   const doorHits = raycaster.intersectObjects(
     galleryGroup.children.filter(c => c.userData.isDoor), false
   );
-  if (doorHits.length > 0 && bedroomLoaded) {
+  if (doorHits.length > 0) {
     hoveredDoor = true;
     hoveredPainting = null;
     infoEl.classList.remove('visible');
-    hotspotHint.textContent = '[ Enter my Bedroom ] — Click Click Bang';
+    hotspotHint.textContent = '[ Enter my Bedroom ] \u2014 Click';
     hotspotHint.classList.add('visible');
     renderer.domElement.style.cursor = 'pointer';
     return;

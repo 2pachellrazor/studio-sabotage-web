@@ -349,16 +349,16 @@ gltfLoader.load(
     const srCtx = srSignCanvas.getContext('2d');
     srCtx.textAlign = 'center';
     for (let blur = 70; blur >= 5; blur -= 5) {
-      srCtx.shadowColor = '#4488cc';
+      srCtx.shadowColor = '#FF3E8E';
       srCtx.shadowBlur = blur;
-      srCtx.fillStyle = blur > 25 ? 'rgba(68,136,204,0.12)' : 'rgba(68,136,204,0.5)';
+      srCtx.fillStyle = blur > 25 ? 'rgba(255,62,142,0.12)' : 'rgba(255,62,142,0.5)';
       srCtx.font = '700 56px monospace';
       srCtx.textBaseline = 'middle';
       srCtx.fillText('SUB ROSA', 512, 80);
       srCtx.font = '700 52px monospace';
       srCtx.fillText('\u2193', 512, 170);
     }
-    srCtx.shadowColor = '#4488cc';
+    srCtx.shadowColor = '#FF3E8E';
     srCtx.shadowBlur = 12;
     srCtx.fillStyle = '#ffffff';
     srCtx.font = '700 56px monospace';
@@ -380,14 +380,14 @@ gltfLoader.load(
     doorMeshes.push(srSignMesh);
 
     // Sub Rosa door blue light
-    const subrosaDoorLight = new THREE.PointLight(0x4488cc, 1.0, 8, 2);
+    const subrosaDoorLight = new THREE.PointLight(0xFF3E8E, 1.0, 8, 2);
     subrosaDoorLight.position.set(-9.5, 1.5, -3.0);
     galleryGroup.add(subrosaDoorLight);
 
     // Blue glow on the floor near Sub Rosa door
     const srGlowMesh = new THREE.Mesh(
       new THREE.PlaneGeometry(2.5, 3.0),
-      new THREE.MeshBasicMaterial({ color: 0x4488cc, transparent: true, opacity: 0.08, side: THREE.DoubleSide })
+      new THREE.MeshBasicMaterial({ color: 0xFF3E8E, transparent: true, opacity: 0.08, side: THREE.DoubleSide })
     );
     srGlowMesh.rotation.x = -Math.PI / 2;
     srGlowMesh.position.set(-9.5, 0.02, -3.0);
@@ -588,7 +588,7 @@ function finishGalleryLoading() {
         const hint = document.getElementById('controls-hint-text');
         if (hint) hint.textContent = 'Drag to look · Pinch to move · Double-tap to interact';
       } else {
-        setTimeout(() => { renderer.domElement.requestPointerLock(); }, (HERO_DURATION + 0.5) * 1000);
+        setTimeout(() => { try { renderer.domElement.requestPointerLock(); } catch(e) { /* Safari: no user gesture */ } }, (HERO_DURATION + 0.5) * 1000);
       }
 
       heroActive = true;
@@ -1543,7 +1543,7 @@ function openPanel(index) {
 
   document.getElementById('panel-category').textContent = hs.category;
   document.getElementById('panel-title').textContent = hs.title;
-  document.getElementById('panel-text').innerHTML = hs.text;
+  document.getElementById('panel-text').textContent = hs.text;
   document.getElementById('panel-detail').textContent = hs.detail;
 
   panel.style.display = '';

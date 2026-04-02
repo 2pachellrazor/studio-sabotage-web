@@ -111,24 +111,6 @@
     box-shadow: 0 0 30px rgba(245,160,181,0.2);
   }
 
-  #about-line {
-    position: absolute;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 560px;
-    text-align: center;
-    z-index: 10;
-    border-left: 2px solid var(--ss-pink);
-    padding-left: 16px;
-    text-align: left;
-  }
-  #about-line p {
-    color: rgba(255,255,255,0.5);
-    font-size: 13px;
-    letter-spacing: 0.06em;
-    line-height: 1.6;
-  }
 
   #footer {
     position: absolute;

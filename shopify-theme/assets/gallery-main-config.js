@@ -10,3 +10,9 @@ const showFooterObserver = setInterval(() => {
     ssFooter.style.display = 'none';
   }
 }, 500);
+// Clean up polling once gallery is entered and footer shown
+document.addEventListener('pointerlockchange', () => {
+  if (document.pointerLockElement && window._SS && window._SS.entered) {
+    clearInterval(showFooterObserver);
+  }
+});

@@ -242,7 +242,7 @@ const infoEl = document.getElementById('info');
 
 overlayEl.addEventListener('click', () => {
   if (!modelLoaded) return;
-  renderer.domElement.requestPointerLock();
+  try { renderer.domElement.requestPointerLock(); } catch(e) { /* Safari fallback */ }
 });
 
 document.addEventListener('pointerlockchange', () => {
@@ -417,7 +417,7 @@ function updateRaycast() {
 
 // ─── Debug: Position Display (press P to toggle) ────────────────────
 const debugEl = document.createElement('div');
-debugEl.style.cssText = 'display:none; position:fixed; bottom:70px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:#4488cc; background:rgba(5,5,8,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(68,136,204,0.3);';
+debugEl.style.cssText = 'display:none; position:fixed; bottom:70px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:#FF3E8E; background:rgba(5,5,8,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(255,62,142,0.3);';
 document.body.appendChild(debugEl);
 
 const debugTarget = document.createElement('div');

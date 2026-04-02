@@ -267,7 +267,7 @@ function finishLoading() {
         crosshairEl.style.display = 'none';
         controlsHint.style.display = 'block';
       } else {
-        renderer.domElement.requestPointerLock();
+        try { renderer.domElement.requestPointerLock(); } catch(e) { /* Safari fallback */ }
       }
     }, 700);
   });
@@ -527,7 +527,7 @@ function openPanel(index) {
 
   document.getElementById('panel-category').textContent = hs.category;
   document.getElementById('panel-title').textContent = hs.title;
-  document.getElementById('panel-text').innerHTML = hs.text;
+  document.getElementById('panel-text').textContent = hs.text;
   document.getElementById('panel-detail').textContent = hs.detail;
 
   panel.classList.add('visible');

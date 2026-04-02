@@ -499,7 +499,7 @@
   }
   .grid-card-info { padding: 12px 0; }
   .grid-card-title {
-    font-size: 0.85rem; font-weight: 500;
+    font-size: 0.85rem; font-weight: var(--ss-weight-regular);
     letter-spacing: 0.05em; color: rgba(0,0,0,0.85);
   }
   .grid-card-price {

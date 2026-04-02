@@ -13,7 +13,49 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://studiosabotage.com/pages/gallery3d">
 <link rel="canonical" href="https://studiosabotage.com/pages/gallery3d">
+<meta name="robots" content="index, follow">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ExhibitionEvent",
+  "name": "Sub Rosa — Studio Sabotage",
+  "description": "Portraits in einer zerstoerten Manufaktur. Begehbare 3D-Ausstellung mit 4 expressionistischen Gemaelden von WladislaW Mueller.",
+  "url": "https://studiosabotage.com/pages/gallery3d",
+  "organizer": {
+    "@type": "Person",
+    "name": "WladislaW Mueller",
+    "alternateName": "WladislaW",
+    "url": "https://studiosabotage.com",
+    "sameAs": ["https://instagram.com/babydonthvrtme"]
+  },
+  "location": {
+    "@type": "VirtualLocation",
+    "url": "https://studiosabotage.com/pages/gallery3d"
+  },
+  "workFeatured": [
+    { "@type": "VisualArtwork", "name": "DRMS", "creator": { "@type": "Person", "name": "WladislaW Mueller" }, "artMedium": "Oil on canvas", "artform": "Painting" },
+    { "@type": "VisualArtwork", "name": "Pink Rabbit", "creator": { "@type": "Person", "name": "WladislaW Mueller" }, "artMedium": "Oil on canvas", "width": "60 cm", "height": "80 cm", "artform": "Painting" },
+    { "@type": "VisualArtwork", "name": "Rabbit II", "creator": { "@type": "Person", "name": "WladislaW Mueller" }, "artMedium": "Oil on canvas", "width": "60 cm", "height": "80 cm", "artform": "Painting" },
+    { "@type": "VisualArtwork", "name": "Rabbit on Yellow", "creator": { "@type": "Person", "name": "WladislaW Mueller" }, "artMedium": "Oil on canvas", "width": "60 cm", "height": "80 cm", "artform": "Painting" }
+  ]
+}
+</script>
 <link rel="stylesheet" href="{{ 'subrosa.css' | asset_url }}">
+
+<noscript>
+<div style="max-width:800px; margin:40px auto; padding:20px; font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; color:#ddd; background:#050508; line-height:1.8;">
+  <h1>Sub Rosa — Studio Sabotage</h1>
+  <p>Portraits in einer zerstoerten Manufaktur. Begehbare 3D-Ausstellung von WladislaW Mueller. Diese Seite benoetigt JavaScript und einen modernen Browser.</p>
+  <h2>Ausgestellte Werke</h2>
+  <ul>
+    <li><strong>DRMS</strong> — Oel auf Leinwand</li>
+    <li><strong>Pink Rabbit</strong> — Oel auf Leinwand, 60x80 cm</li>
+    <li><strong>Rabbit II</strong> — Oel auf Leinwand, 60x80 cm</li>
+    <li><strong>Rabbit on Yellow</strong> — Oel auf Leinwand, 60x80 cm</li>
+  </ul>
+  <p><a href="/pages/gallery" style="color:#F5A0B5;">Zur Hauptgalerie</a> · <a href="/pages/about" style="color:#F5A0B5;">Ueber den Kuenstler</a></p>
+</div>
+</noscript>
 <script>
   window.SS_ASSETS = {
     manufactoryGlb: {{ 'manufactory.glb' | asset_url | json }}

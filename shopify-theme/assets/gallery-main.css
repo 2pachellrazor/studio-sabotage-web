@@ -211,12 +211,11 @@
   #gallery-header nav a.ig-link svg { width: 16px; height: 16px; fill: currentColor; }
 
   #flat-world-btn {
-    position: absolute; right: 36px; top: 50%; transform: translateY(-50%);
-    background: none; border: 1px solid rgba(0,0,0,0.15); color: rgba(0,0,0,0.5);
-    font-size: 1.1rem; width: 32px; height: 32px; cursor: pointer;
+    background: none; border: 1px solid rgba(0,0,0,0.15); color: rgba(0,0,0,0.4);
+    font-size: 0.95rem; width: 26px; height: 26px; cursor: pointer;
     font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     transition: all 0.2s ease; pointer-events: auto; display: none;
-    line-height: 1;
+    line-height: 1; padding: 0;
   }
   #flat-world-btn:hover { color: rgba(0,0,0,0.85); border-color: rgba(0,0,0,0.3); }
 

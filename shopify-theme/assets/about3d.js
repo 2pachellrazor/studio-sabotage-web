@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 // ─── Hotspot Data ────────────────────────────────────────────────────
 const HOTSPOTS = [
@@ -157,7 +158,10 @@ function createHotspotSpheres() {
 }
 
 // ─── GLB Loading ─────────────────────────────────────────────────────
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
 const loader = new GLTFLoader();
+loader.setDRACOLoader(dracoLoader);
 let roomLoaded = false;
 
 function updateLoading(pct, msg) {

@@ -1400,10 +1400,14 @@ function updateGalleryRaycast() {
     galleryGroup.children.filter(c => c.userData.isDoor), false
   );
   if (doorHits.length > 0) {
-    hoveredDoor = true;
+    const doorData = doorHits[0].object.userData;
+    if (doorData.doorTarget === 'merch') return; // merch not yet available
+    hoveredDoor = doorData.doorTarget || true;
     hoveredPainting = null;
     infoEl.classList.remove('visible');
-    hotspotHint.textContent = '[ Enter my Bedroom ] \u2014 Click';
+    hotspotHint.textContent = doorData.doorTarget === 'bedroom'
+      ? '[ Enter my Bedroom ] \u2014 Click'
+      : '[ Enter ] \u2014 Click';
     hotspotHint.classList.add('visible');
     renderer.domElement.style.cursor = 'pointer';
     return;
@@ -1499,7 +1503,7 @@ document.addEventListener('click', () => {
   if (!isLocked) return;
 
   if (hoveredDoor) {
-    const target = currentRoom === 'gallery' ? 'bedroom' : 'gallery';
+    const target = (typeof hoveredDoor === 'string') ? hoveredDoor : (currentRoom === 'gallery' ? 'bedroom' : 'gallery');
     switchRoom(target);
     return;
   }

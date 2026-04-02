@@ -13,14 +13,6 @@
     src: url('NimbusSans-Bold.woff2') format('woff2');
   }
 
-  :root {
-    --ss-black: #000000;
-    --ss-white: #FFFFFF;
-    --ss-pink: #F5A0B5;
-    --ss-neon: #FF3E8E;
-    --ss-beige: #D4CFC8;
-    --ss-font-primary: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
-  }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: var(--ss-black) !important; }
@@ -58,7 +50,7 @@
     font-weight: 400;
     padding-bottom: 0.4em;
     line-height: 1.4;
-    background: linear-gradient(to bottom, #FFFFFF 80%, transparent 100%);
+    background: linear-gradient(to bottom, var(--ss-white) 80%, transparent 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -93,7 +85,7 @@
     text-transform: uppercase;
     text-decoration: none;
     padding: 0.8rem 2.5rem;
-    border: 1px solid rgba(245,160,181,0.4);
+    border: 1px solid rgba(var(--ss-pink-rgb),0.4);
     border-radius: 0;
     cursor: pointer;
     margin-top: 0.4rem;
@@ -102,13 +94,13 @@
     line-height: 1.2;
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
-    background: rgba(245,160,181,0.05);
-    box-shadow: 0 0 20px rgba(245,160,181,0.08);
+    background: rgba(var(--ss-pink-rgb),0.05);
+    box-shadow: 0 0 20px rgba(var(--ss-pink-rgb),0.08);
   }
   #cta:hover {
-    background: rgba(245,160,181,0.15);
-    border-color: rgba(245,160,181,0.5);
-    box-shadow: 0 0 30px rgba(245,160,181,0.2);
+    background: rgba(var(--ss-pink-rgb),0.15);
+    border-color: rgba(var(--ss-pink-rgb),0.5);
+    box-shadow: 0 0 30px rgba(var(--ss-pink-rgb),0.2);
   }
 
 

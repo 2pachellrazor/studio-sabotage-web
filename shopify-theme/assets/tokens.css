@@ -1,0 +1,41 @@
+/* Studio Sabotage Design Tokens v2.1 — Single Source of Truth
+   Prefix: --ss-
+   Quelle: tokens.json v2.1.0 (2026-03-23) + Surface Hierarchy + Context Colors
+   Geladen in blank.liquid als erstes Stylesheet */
+
+:root {
+  /* Brand Colors */
+  --ss-black: #000000;
+  --ss-white: #FFFFFF;
+  --ss-pink: #F5A0B5;
+  --ss-neon: #FF3E8E;
+  --ss-beige: #D4CFC8;
+
+  /* RGB (fuer rgba() Nutzung) */
+  --ss-black-rgb: 0, 0, 0;
+  --ss-white-rgb: 255, 255, 255;
+  --ss-pink-rgb: 245, 160, 181;
+  --ss-neon-rgb: 255, 62, 142;
+  --ss-beige-rgb: 212, 207, 200;
+
+  /* Context Colors */
+  --ss-off-white: #f5f5f0;
+  --ss-off-black: #0a0a0a;
+  --ss-deep-black: #050508;
+
+  /* Surface Hierarchy */
+  --ss-surface-0: #fef9f1;
+  --ss-surface-1: #f8f3eb;
+  --ss-surface-2: #ede7e0;
+  --ss-surface-dim: #ded9d2;
+  --ss-on-surface: #1d1b17;
+  --ss-on-surface-muted: #474747;
+  --ss-ghost-border: rgba(199,199,199,0.1);
+
+  /* Typography */
+  --ss-font-primary: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  --ss-font-mono: monospace;
+  --ss-weight-regular: 400;
+  --ss-weight-bold: 700;
+  --ss-wordmark-tracking: 0.35em;
+}

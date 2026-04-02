@@ -128,7 +128,7 @@ canvas { display: block; }
 #gallery-header nav .nav-sep { color: rgba(0,0,0,0.15); pointer-events: none; font-size: 0.6rem; }
 
 #page-footer {
-  position: fixed; bottom: 0; left: 0; width: 100%; z-index: 160;
+  position: fixed; bottom: 0; left: 0; width: 100%; z-index: 210;
   padding: 12px 24px; text-align: center;
   font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
   font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;

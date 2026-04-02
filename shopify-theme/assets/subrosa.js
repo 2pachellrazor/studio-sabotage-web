@@ -6,17 +6,15 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 const CDN_BASE = 'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/';
 const CDN_SUFFIX = '?v=1774065825';
 
-// All 7 paintings for Sub Rosa
+// 5 paintings for Sub Rosa
 const PAINTINGS = [
   // Manufactory wall
   { title: 'DRMS',             url: CDN_BASE + 'drms.jpg?v=1774374693',       w: 306, h: 153, large: true },
   { title: 'Pink Rabbit',      url: CDN_BASE + 'painting_11.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
   { title: 'Rabbit II',        url: CDN_BASE + 'painting_12.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
-  { title: 'Figure on Pink',   url: CDN_BASE + 'painting_13.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
-  // Additional portraits
   { title: 'Rabbit on Yellow', url: CDN_BASE + 'painting_14.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
+  // Additional
   { title: 'Dark Portrait',    url: CDN_BASE + 'painting_06.jpg' + CDN_SUFFIX, w: 80,  h: 80 },
-  { title: 'Pink Faces',       url: CDN_BASE + 'painting_05.jpg' + CDN_SUFFIX, w: 60,  h: 120 },
 ];
 
 // === STATE ===
@@ -210,15 +208,11 @@ gltfLoader.load(
     const paintingY = eyeHeight - 0.5;
 
     const placements = [
-      // Original 4 from prototype
       { painting: PAINTINGS[0], pos: new THREE.Vector3(8.0, paintingY, 8.1), rotY: Math.PI },       // DRMS — large, z+ wall
       { painting: PAINTINGS[1], pos: new THREE.Vector3(0.0, paintingY, 7.1), rotY: Math.PI },       // Pink Rabbit — z+ wall
       { painting: PAINTINGS[2], pos: new THREE.Vector3(0.0, paintingY, -8.5), rotY: 0 },            // Rabbit II — z- wall
-      { painting: PAINTINGS[3], pos: new THREE.Vector3(-13.5, paintingY, -5.5), rotY: Math.PI / 2 },// Figure on Pink — x- wall
-      // Additional 3 portraits
-      { painting: PAINTINGS[4], pos: new THREE.Vector3(-13.5, paintingY, 2.0), rotY: Math.PI / 2 }, // Rabbit on Yellow — x- wall
-      { painting: PAINTINGS[5], pos: new THREE.Vector3(5.0, paintingY, -8.5), rotY: 0 },            // Dark Portrait — z- wall
-      { painting: PAINTINGS[6], pos: new THREE.Vector3(-6.0, paintingY, 7.1), rotY: Math.PI },      // Pink Faces — z+ wall
+      { painting: PAINTINGS[3], pos: new THREE.Vector3(-13.5, paintingY, -5.5), rotY: Math.PI / 2 },// Rabbit on Yellow — x- wall (ehem. Figure on Pink)
+      { painting: PAINTINGS[4], pos: new THREE.Vector3(13.5, paintingY, -4.5), rotY: -Math.PI / 2 },// Dark Portrait — x+ wall
     ];
 
     placements.forEach(pl => {
@@ -424,6 +418,32 @@ function updateRaycast() {
   renderer.domElement.style.cursor = '';
 }
 
+// ─── Debug: Position Display (press P to toggle) ────────────────────
+const debugEl = document.createElement('div');
+debugEl.style.cssText = 'display:none; position:fixed; bottom:70px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:#4488cc; background:rgba(5,5,8,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(68,136,204,0.3);';
+document.body.appendChild(debugEl);
+
+const debugTarget = document.createElement('div');
+debugTarget.style.cssText = 'display:none; position:fixed; bottom:44px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:rgba(255,255,255,0.6); background:rgba(5,5,8,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(255,255,255,0.1);';
+document.body.appendChild(debugTarget);
+
+const debugBounds = document.createElement('div');
+debugBounds.style.cssText = 'display:none; position:fixed; bottom:18px; left:16px; z-index:200; font-family:monospace; font-size:0.65rem; color:rgba(255,255,255,0.4); background:rgba(5,5,8,0.9); padding:4px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(255,255,255,0.05);';
+document.body.appendChild(debugBounds);
+
+let debugMode = false;
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'KeyP' && (isLocked || isTouchActive)) {
+    debugMode = !debugMode;
+    debugEl.style.display = debugMode ? 'block' : 'none';
+    debugTarget.style.display = debugMode ? 'block' : 'none';
+    debugBounds.style.display = debugMode ? 'block' : 'none';
+    if (debugMode) {
+      debugBounds.textContent = `bounds: x[${roomBounds.xMin.toFixed(1)}…${roomBounds.xMax.toFixed(1)}] z[${roomBounds.zMin.toFixed(1)}…${roomBounds.zMax.toFixed(1)}] floorY:${floorY.toFixed(2)} eyeH:${eyeHeight.toFixed(2)}`;
+    }
+  }
+});
+
 // === ANIMATE ===
 let lastTime = performance.now();
 function animate() {
@@ -433,6 +453,24 @@ function animate() {
   lastTime = now;
   updateMovement(dt);
   updateRaycast();
+
+  // Debug position display
+  if (debugMode) {
+    debugEl.textContent = `cam: x:${camera.position.x.toFixed(2)}  y:${camera.position.y.toFixed(2)}  z:${camera.position.z.toFixed(2)}`;
+    const debugRay = new THREE.Raycaster();
+    debugRay.setFromCamera(screenCenter, camera);
+    const allMeshes = [];
+    scene.traverse(c => { if (c.isMesh) allMeshes.push(c); });
+    const targetHits = debugRay.intersectObjects(allMeshes);
+    if (targetHits.length > 0) {
+      const p = targetHits[0].point;
+      const name = targetHits[0].object.userData.paintingTitle || targetHits[0].object.name || '(mesh)';
+      debugTarget.textContent = `target: x:${p.x.toFixed(2)}  y:${p.y.toFixed(2)}  z:${p.z.toFixed(2)}  [${name}]`;
+    } else {
+      debugTarget.textContent = 'target: ---';
+    }
+  }
+
   renderer.render(scene, camera);
 }
 animate();

@@ -10,19 +10,21 @@ const doorMeshes = [];
 let entered = false;
 
 const PAINTINGS = [
-  { handle: 'luchador-mask',               title: 'Luchador Mask',              price: '2160', w: 80,  h: 80  },
-  { handle: 'the-kiss',                    title: 'The Kiss',                   price: '2430', w: 120, h: 60  },
-  { handle: 'selbstportrait-mit-trommel',  title: 'Selbstportrait mit Trommel', price: '2980', w: 100, h: 120 },
-  { handle: 'volk-wolf',                   title: 'Volk / Wolf',               price: '2160', w: 70,  h: 90  },
-  { handle: 'purple-figure',               title: 'Purple Figure',             price: '2150', w: 80,  h: 100 },
-  { handle: 'reclining-figure',            title: 'Reclining Figure',          price: '1920', w: 80,  h: 80  },
-  { handle: 'extended-hand',               title: 'Extended Hand',             price: '1660', w: 80,  h: 80  },
-  { handle: 'fist',                        title: 'Fist',                      price: '1660', w: 80,  h: 80  },
-  { handle: 'hand-on-black',               title: 'Hand on Black',             price: '1920', w: 80,  h: 80  },
+  { handle: 'luchador-mask',               title: 'Luchador Mask',              price: '2160', w: 80,  h: 80,  img: 'painting_00' },
+  { handle: 'the-kiss',                    title: 'The Kiss',                   price: '2430', w: 120, h: 60,  img: 'painting_01' },
+  { handle: 'selbstportrait-mit-trommel',  title: 'Selbstportrait mit Trommel', price: '2980', w: 100, h: 120, img: 'painting_02' },
+  { handle: 'volk-wolf',                   title: 'Volk / Wolf',               price: '2160', w: 70,  h: 90,  img: 'painting_03' },
+  { handle: 'purple-figure',               title: 'Purple Figure',             price: '2150', w: 80,  h: 100, img: 'painting_04' },
+  { handle: 'pink-faces',                   title: 'Pink Faces',                price: '1920', w: 60,  h: 120, img: 'painting_05' },
+  { handle: 'extended-hand',               title: 'Extended Hand',             price: '1660', w: 80,  h: 80,  img: 'painting_06' },
+  { handle: 'fist',                        title: 'Fist',                      price: '1660', w: 80,  h: 80,  img: 'painting_07' },
+  { handle: 'hand-on-black',               title: 'Hand on Black',             price: '1920', w: 80,  h: 80,  img: 'painting_08' },
+  { handle: 'figure-on-pink',              title: 'Figure on Pink',            price: '1450', w: 60,  h: 80,  img: 'painting_13' },
 ];
 
 const CDN_BASE = 'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/';
 const CDN_SUFFIX = '?v=1774065825';
+function paintingUrl(i) { return `${CDN_BASE}${PAINTINGS[i].img}.jpg${CDN_SUFFIX}`; }
 
 const HOTSPOTS = [
   {
@@ -473,7 +475,7 @@ function loadPaintings() {
   const total = PAINTINGS.length;
 
   PAINTINGS.forEach((p, i) => {
-    const url = `${CDN_BASE}painting_${String(i).padStart(2, '0')}.jpg${CDN_SUFFIX}`;
+    const url = paintingUrl(i);
     textureLoader.load(url, (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace;
       createPaintingMesh(tex, i);
@@ -544,9 +546,9 @@ function createPaintingMesh(texture, index) {
   const paintingY = 1.8;
   const wallOffset = 0.08;
 
-  // 9 paintings split evenly: 5 on Wall A (front), 4 on Wall B (back)
+  // 10 paintings split: 5 on Wall A (front), 5 on Wall B (back)
   const wallA_x = [-7.5, -3.8, 0.0, 3.8, 7.5];       // 5 paintings
-  const wallB_x = [-6.5, -2.0, 2.5, 7.0];             // 4 paintings
+  const wallB_x = [-7.0, -3.5, 0.0, 3.5, 7.0];       // 5 paintings
 
   if (index < 5) {
     group.position.set(wallA_x[index], paintingY, -6.0 + wallOffset);
@@ -957,13 +959,12 @@ function fillSuggestions(currentIdx) {
   const others = PAINTINGS.map((p, i) => i).filter(i => i !== currentIdx);
   for (let n = others.length - 1; n > 0; n--) { const j = Math.floor(Math.random() * (n + 1)); [others[n], others[j]] = [others[j], others[n]]; }
   others.slice(0, 3).forEach(i => {
-    const imgIdx = String(i).padStart(2, '0');
     const thumb = document.createElement('div');
     thumb.style.cssText = 'cursor:pointer; overflow:hidden;';
-    thumb.innerHTML = `<img src="${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}" style="width:100%; aspect-ratio:1; object-fit:cover; display:block; transition:transform 0.5s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" /><p style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700; margin:6px 0 0 0;">${PAINTINGS[i].title}</p>`;
+    thumb.innerHTML = `<img src="${paintingUrl(i)}" style="width:100%; aspect-ratio:1; object-fit:cover; display:block; transition:transform 0.5s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" /><p style="font-size:10px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700; margin:6px 0 0 0;">${PAINTINGS[i].title}</p>`;
     thumb.addEventListener('click', () => {
       const p = PAINTINGS[i];
-      document.getElementById('product-img').src = `${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}`;
+      document.getElementById('product-img').src = paintingUrl(i);
       document.getElementById('product-title').textContent = p.title;
       document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
       document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
@@ -1249,8 +1250,7 @@ renderer.domElement.addEventListener('touchend', (e) => {
         const idx = paintHits[0].object.userData.paintingIndex;
         if (idx !== undefined) {
           const p = PAINTINGS[idx];
-          const imgIdx = String(idx).padStart(2, '0');
-          document.getElementById('product-img').src = `${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}`;
+          document.getElementById('product-img').src = paintingUrl(idx);
           document.getElementById('product-title').textContent = p.title;
           document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
           document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
@@ -1521,9 +1521,8 @@ document.addEventListener('click', () => {
 
   if (currentRoom === 'gallery' && hoveredPainting !== null) {
     const p = PAINTINGS[hoveredPainting];
-    const imgIdx = String(hoveredPainting).padStart(2, '0');
     document.exitPointerLock();
-    document.getElementById('product-img').src = `${CDN_BASE}painting_${imgIdx}.jpg${CDN_SUFFIX}`;
+    document.getElementById('product-img').src = paintingUrl(hoveredPainting);
     document.getElementById('product-title').textContent = p.title;
     document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm \u00b7 Oil / Acrylic on Canvas`;
     document.getElementById('product-buy').href = `/products/${p.handle}`;
@@ -1746,7 +1745,7 @@ function buildGrid() {
     card.target = '_blank';
     card.rel = 'noopener';
     const img = document.createElement('img');
-    img.src = `${CDN_BASE}painting_${String(i).padStart(2, '0')}.jpg${CDN_SUFFIX}`;
+    img.src = paintingUrl(i);
     img.alt = p.title;
     img.loading = 'lazy';
     const info = document.createElement('div');

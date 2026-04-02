@@ -1611,10 +1611,8 @@ function switchRoom(target) {
   if (target === currentRoom) return;
   if (switching) return;
 
-  // Merch room — separate page (42 MB GLB, too heavy for same scene)
+  // Merch room — not yet available
   if (target === 'merch') {
-    transitionEl.style.opacity = '1';
-    setTimeout(() => { window.location.href = '/pages/merch'; }, 500);
     return;
   }
 
@@ -1763,8 +1761,8 @@ function showGrid() {
 function hideGrid() {
   gridActive = false;
   gridView.classList.remove('visible');
-  flatWorldBtn.textContent = '\u22a2';
-  flatWorldBtn.title = 'Flat World — 2D Ansicht';
+  flatWorldBtn.textContent = '\u229e';
+  flatWorldBtn.title = 'Flat World \u2014 2D Ansicht';
 }
 
 flatWorldBtn.addEventListener('click', (e) => {

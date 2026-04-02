@@ -1,0 +1,322 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+// === PAINTINGS DATA ===
+const CDN_BASE = 'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/';
+const CDN_SUFFIX = '?v=1774065825';
+
+// All 7 paintings for Sub Rosa
+const PAINTINGS = [
+  // Manufactory wall
+  { title: 'DRMS',             url: CDN_BASE + 'drms.jpg?v=1774374693',       w: 306, h: 153, large: true },
+  { title: 'Pink Rabbit',      url: CDN_BASE + 'painting_11.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
+  { title: 'Rabbit II',        url: CDN_BASE + 'painting_12.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
+  { title: 'Figure on Pink',   url: CDN_BASE + 'painting_13.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
+  // Additional portraits
+  { title: 'Rabbit on Yellow', url: CDN_BASE + 'painting_14.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
+  { title: 'Dark Portrait',    url: CDN_BASE + 'painting_06.jpg' + CDN_SUFFIX, w: 80,  h: 80 },
+  { title: 'Pink Faces',       url: CDN_BASE + 'painting_05.jpg' + CDN_SUFFIX, w: 60,  h: 120 },
+];
+
+// === STATE ===
+let isLocked = false;
+let modelLoaded = false;
+let floorY = 0;
+let eyeHeight = 1.7;
+let roomBounds = { xMin: -10, xMax: 10, zMin: -10, zMax: 10 };
+const paintingMeshes = [];
+let hoveredPainting = null;
+
+// === SCENE ===
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050508);
+scene.fog = new THREE.FogExp2(0x050508, 0.03);
+
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 3, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 2.2;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// === LIGHTING ===
+scene.add(new THREE.AmbientLight(0x889999, 1.0));
+scene.add(new THREE.HemisphereLight(0xaabbcc, 0x111122, 0.5));
+
+const fill = new THREE.DirectionalLight(0x8899aa, 0.4);
+fill.position.set(0, 15, 0);
+scene.add(fill);
+
+const skyLight = new THREE.PointLight(0x6699cc, 2.0, 40);
+scene.add(skyLight);
+const skyLight2 = new THREE.PointLight(0x6699cc, 1.2, 35);
+scene.add(skyLight2);
+const pinkNeon = new THREE.PointLight(0xFF3E8E, 0.6, 20);
+scene.add(pinkNeon);
+
+// === LOADERS ===
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+const textureLoader = new THREE.TextureLoader();
+
+// === RAYCASTER ===
+const raycaster = new THREE.Raycaster();
+raycaster.far = 10;
+const screenCenter = new THREE.Vector2(0, 0);
+
+// === CREATE PAINTING MESH ===
+function createPaintingMesh(texture, p, position, rotationY) {
+  const pScale = 4.0 / 100;
+  const pw = p.w * pScale;
+  const ph = p.h * pScale;
+  const group = new THREE.Group();
+
+  // Frame
+  const frameW = 0.04;
+  const frameD = 0.06;
+  const isPink = Math.random() > 0.5;
+  const frameMat = isPink
+    ? new THREE.MeshStandardMaterial({ color: 0xF5A0B5, roughness: 0.35, metalness: 0.2 })
+    : new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.25, metalness: 0.15 });
+
+  // Back
+  group.add(new THREE.Mesh(
+    new THREE.PlaneGeometry(pw + frameW * 2, ph + frameW * 2),
+    new THREE.MeshStandardMaterial({ color: 0x0a0a08 })
+  ));
+
+  // Frame border
+  function addFrame(halfW, halfH, w, d, mat) {
+    const fullW = (halfW + w) * 2;
+    const top = new THREE.Mesh(new THREE.BoxGeometry(fullW, w, d), mat);
+    top.position.set(0, halfH + w / 2, d / 2); group.add(top);
+    const bot = new THREE.Mesh(new THREE.BoxGeometry(fullW, w, d), mat);
+    bot.position.set(0, -halfH - w / 2, d / 2); group.add(bot);
+    const left = new THREE.Mesh(new THREE.BoxGeometry(w, halfH * 2, d), mat);
+    left.position.set(-halfW - w / 2, 0, d / 2); group.add(left);
+    const right = new THREE.Mesh(new THREE.BoxGeometry(w, halfH * 2, d), mat);
+    right.position.set(halfW + w / 2, 0, d / 2); group.add(right);
+  }
+  addFrame(pw / 2, ph / 2, frameW, frameD, frameMat);
+
+  // Canvas
+  const paintMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(pw, ph),
+    texture
+      ? new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85, metalness: 0.0, side: THREE.DoubleSide })
+      : new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide })
+  );
+  paintMesh.position.z = 0.03;
+  group.add(paintMesh);
+
+  group.position.copy(position);
+  group.rotation.y = rotationY;
+  scene.add(group);
+
+  // SpotLight per painting
+  const spotDir = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
+  const spotPos = position.clone().add(new THREE.Vector3(0, ph / 2 + 1.5, 0)).sub(spotDir.clone().multiplyScalar(1.0));
+  const spot = new THREE.SpotLight(0xfff8f0, 4.0, 15, Math.PI / 5, 0.5, 1.5);
+  spot.position.copy(spotPos);
+  spot.target.position.copy(position);
+  spot.castShadow = true;
+  spot.shadow.mapSize.set(512, 512);
+  spot.shadow.bias = -0.001;
+  scene.add(spot);
+  scene.add(spot.target);
+
+  group.traverse(child => { if (child.isMesh) child.castShadow = true; });
+
+  paintMesh.userData = { paintingTitle: p.title, paintingData: p };
+  paintingMeshes.push(paintMesh);
+  return group;
+}
+
+// === LOAD GLB ===
+const headerEl = document.getElementById('gallery-header');
+const overlayEl = document.getElementById('overlay');
+const loadingText = overlayEl.querySelector('p');
+
+gltfLoader.load(
+  window.SS_ASSETS.manufactoryGlb,
+  (gltf) => {
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const scale = 30 / Math.max(size.x, size.y, size.z);
+    model.scale.setScalar(scale);
+
+    const scaledBox = new THREE.Box3().setFromObject(model);
+    const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
+    const scaledSize = scaledBox.getSize(new THREE.Vector3());
+    model.position.x -= scaledCenter.x;
+    model.position.z -= scaledCenter.z;
+    model.position.y -= scaledBox.min.y;
+    model.traverse(child => { if (child.isMesh) child.receiveShadow = true; });
+    scene.add(model);
+
+    const finalBox = new THREE.Box3().setFromObject(model);
+    const margin = scaledSize.x * 0.12;
+    roomBounds = {
+      xMin: finalBox.min.x + margin, xMax: finalBox.max.x - margin,
+      zMin: finalBox.min.z + margin, zMax: finalBox.max.z - margin
+    };
+
+    // Floor detection
+    const floorRay = new THREE.Raycaster();
+    floorRay.set(new THREE.Vector3(0, 20, 0), new THREE.Vector3(0, -1, 0));
+    const allHits = floorRay.intersectObject(model, true);
+
+    if (allHits.length >= 3) floorY = allHits[allHits.length - 2].point.y;
+    else if (allHits.length >= 1) floorY = allHits[allHits.length - 1].point.y;
+
+    eyeHeight = floorY + 6.4;
+
+    camera.position.set(0, eyeHeight, 0);
+    camera.lookAt(3, eyeHeight, 0);
+
+    skyLight.position.set(0, floorY + 10, 0);
+    skyLight2.position.set(-5, floorY + 9, 3);
+    pinkNeon.position.set(4, floorY + 5, -2);
+
+    modelLoaded = true;
+    loadingText.textContent = 'Click to enter';
+
+    // === PAINTING PLACEMENT ===
+    const paintingY = eyeHeight - 0.5;
+
+    const placements = [
+      // Original 4 from prototype
+      { painting: PAINTINGS[0], pos: new THREE.Vector3(8.0, paintingY, 8.1), rotY: Math.PI },       // DRMS — large, z+ wall
+      { painting: PAINTINGS[1], pos: new THREE.Vector3(0.0, paintingY, 7.1), rotY: Math.PI },       // Pink Rabbit — z+ wall
+      { painting: PAINTINGS[2], pos: new THREE.Vector3(0.0, paintingY, -8.5), rotY: 0 },            // Rabbit II — z- wall
+      { painting: PAINTINGS[3], pos: new THREE.Vector3(-13.5, paintingY, -5.5), rotY: Math.PI / 2 },// Figure on Pink — x- wall
+      // Additional 3 portraits
+      { painting: PAINTINGS[4], pos: new THREE.Vector3(-13.5, paintingY, 2.0), rotY: Math.PI / 2 }, // Rabbit on Yellow — x- wall
+      { painting: PAINTINGS[5], pos: new THREE.Vector3(5.0, paintingY, -8.5), rotY: 0 },            // Dark Portrait — z- wall
+      { painting: PAINTINGS[6], pos: new THREE.Vector3(-6.0, paintingY, 7.1), rotY: Math.PI },      // Pink Faces — z+ wall
+    ];
+
+    placements.forEach(pl => {
+      textureLoader.load(pl.painting.url, (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        createPaintingMesh(tex, pl.painting, pl.pos, pl.rotY);
+      });
+    });
+
+    // Show header
+    headerEl.classList.add('visible');
+  },
+  (progress) => {
+    if (progress.total > 0) {
+      loadingText.textContent = `Loading ${(progress.loaded / progress.total * 100).toFixed(0)}%...`;
+    }
+  },
+  (error) => {
+    console.error('[Sub Rosa] GLB load error:', error);
+    loadingText.textContent = 'Error loading model';
+  }
+);
+
+// === CONTROLS ===
+const crosshair = document.getElementById('crosshair');
+const infoEl = document.getElementById('info');
+
+overlayEl.addEventListener('click', () => {
+  if (!modelLoaded) return;
+  renderer.domElement.requestPointerLock();
+});
+
+document.addEventListener('pointerlockchange', () => {
+  isLocked = document.pointerLockElement === renderer.domElement;
+  if (isLocked) {
+    overlayEl.classList.add('hidden');
+    crosshair.style.display = 'block';
+  } else {
+    overlayEl.classList.remove('hidden');
+    crosshair.style.display = 'none';
+  }
+});
+
+// Mouse look
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+document.addEventListener('mousemove', (e) => {
+  if (!isLocked) return;
+  euler.setFromQuaternion(camera.quaternion);
+  euler.y -= e.movementX * 0.002;
+  euler.x -= e.movementY * 0.002;
+  euler.x = Math.max(-Math.PI / 2 + 0.05, Math.min(Math.PI / 2 - 0.05, euler.x));
+  camera.quaternion.setFromEuler(euler);
+});
+
+// WASD
+const keys = {};
+document.addEventListener('keydown', (e) => { keys[e.code] = true; });
+document.addEventListener('keyup', (e) => { keys[e.code] = false; });
+
+function updateMovement(dt) {
+  if (!isLocked || !modelLoaded) return;
+  const forward = new THREE.Vector3();
+  camera.getWorldDirection(forward);
+  forward.y = 0; forward.normalize();
+  const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+
+  const dir = new THREE.Vector3();
+  if (keys['KeyW'] || keys['ArrowUp']) dir.add(forward);
+  if (keys['KeyS'] || keys['ArrowDown']) dir.sub(forward);
+  if (keys['KeyD'] || keys['ArrowRight']) dir.add(right);
+  if (keys['KeyA'] || keys['ArrowLeft']) dir.sub(right);
+
+  if (dir.lengthSq() > 0) {
+    dir.normalize();
+    camera.position.addScaledVector(dir, 3.5 * dt);
+  }
+  camera.position.x = Math.max(roomBounds.xMin, Math.min(roomBounds.xMax, camera.position.x));
+  camera.position.z = Math.max(roomBounds.zMin, Math.min(roomBounds.zMax, camera.position.z));
+  camera.position.y = eyeHeight;
+}
+
+function updateRaycast() {
+  if (!isLocked) return;
+  raycaster.setFromCamera(screenCenter, camera);
+  const hits = raycaster.intersectObjects(paintingMeshes, false);
+  if (hits.length > 0 && hits[0].object.userData.paintingTitle) {
+    const data = hits[0].object.userData;
+    hoveredPainting = data;
+    infoEl.textContent = data.paintingTitle + ` \u2014 ${data.paintingData.w} \u00d7 ${data.paintingData.h} cm`;
+    infoEl.classList.add('visible');
+    renderer.domElement.style.cursor = 'pointer';
+    return;
+  }
+  hoveredPainting = null;
+  infoEl.classList.remove('visible');
+  renderer.domElement.style.cursor = '';
+}
+
+// === ANIMATE ===
+let lastTime = performance.now();
+function animate() {
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  const dt = Math.min((now - lastTime) / 1000, 0.1);
+  lastTime = now;
+  updateMovement(dt);
+  updateRaycast();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});

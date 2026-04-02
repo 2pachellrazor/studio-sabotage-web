@@ -6,15 +6,12 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 const CDN_BASE = 'https://cdn.shopify.com/s/files/1/1013/4650/9142/files/';
 const CDN_SUFFIX = '?v=1774065825';
 
-// 5 paintings for Sub Rosa
+// 4 paintings for Sub Rosa
 const PAINTINGS = [
-  // Manufactory wall
   { title: 'DRMS',             url: CDN_BASE + 'drms.jpg?v=1774374693',       w: 306, h: 153, large: true },
   { title: 'Pink Rabbit',      url: CDN_BASE + 'painting_11.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
   { title: 'Rabbit II',        url: CDN_BASE + 'painting_12.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
   { title: 'Rabbit on Yellow', url: CDN_BASE + 'painting_14.jpg' + CDN_SUFFIX, w: 60,  h: 80 },
-  // Additional
-  { title: 'Dark Portrait',    url: CDN_BASE + 'painting_06.jpg' + CDN_SUFFIX, w: 80,  h: 80 },
 ];
 
 // === STATE ===
@@ -91,7 +88,8 @@ function createPaintingMesh(texture, p, position, rotationY) {
   // Frame
   const frameW = 0.04;
   const frameD = 0.06;
-  const isPink = Math.random() > 0.5;
+  const framePattern = [1, 0, 0, 1]; // 1 = pink, 0 = black
+  const isPink = framePattern[paintingMeshes.length % framePattern.length] === 1;
   const frameMat = isPink
     ? new THREE.MeshStandardMaterial({ color: 0xF5A0B5, roughness: 0.35, metalness: 0.2 })
     : new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.25, metalness: 0.15 });
@@ -211,8 +209,7 @@ gltfLoader.load(
       { painting: PAINTINGS[0], pos: new THREE.Vector3(8.0, paintingY, 8.1), rotY: Math.PI },       // DRMS — large, z+ wall
       { painting: PAINTINGS[1], pos: new THREE.Vector3(0.0, paintingY, 7.1), rotY: Math.PI },       // Pink Rabbit — z+ wall
       { painting: PAINTINGS[2], pos: new THREE.Vector3(0.0, paintingY, -8.5), rotY: 0 },            // Rabbit II — z- wall
-      { painting: PAINTINGS[3], pos: new THREE.Vector3(-13.5, paintingY, -5.5), rotY: Math.PI / 2 },// Rabbit on Yellow — x- wall (ehem. Figure on Pink)
-      { painting: PAINTINGS[4], pos: new THREE.Vector3(13.5, paintingY, -4.5), rotY: -Math.PI / 2 },// Dark Portrait — x+ wall
+      { painting: PAINTINGS[3], pos: new THREE.Vector3(-13.5, paintingY, -5.5), rotY: Math.PI / 2 },// Rabbit on Yellow — x- wall
     ];
 
     placements.forEach(pl => {

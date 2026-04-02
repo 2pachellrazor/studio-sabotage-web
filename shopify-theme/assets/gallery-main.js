@@ -1524,8 +1524,11 @@ document.addEventListener('click', () => {
     document.exitPointerLock();
     document.getElementById('product-img').src = paintingUrl(hoveredPainting);
     document.getElementById('product-title').textContent = p.title;
-    document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm \u00b7 Oil / Acrylic on Canvas`;
+    document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
+    document.getElementById('product-series').textContent = 'Oil, Acrylic & Mixed Media on Canvas';
+    document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
     document.getElementById('product-buy').href = `/products/${p.handle}`;
+    fillSuggestions(hoveredPainting);
     productModal.style.display = 'flex';
   }
 

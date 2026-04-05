@@ -948,7 +948,8 @@ productModal.innerHTML = `
         <span id="product-price" style="font-size:18px; font-weight:800; letter-spacing:-0.02em;"></span>
       </div>
     </div>
-    <a id="product-buy" target="_blank" style="display:flex; align-items:center; justify-content:center; text-decoration:none; padding:18px 24px; font-family:var(--ss-font-primary); font-size:13px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ss-black); background:var(--ss-pink); border:none; border-radius:0; cursor:pointer; transition:all 0.3s ease;" onmouseover="this.style.background='var(--ss-black)';this.style.color='var(--ss-pink)'" onmouseout="this.style.background='var(--ss-pink)';this.style.color='var(--ss-black)'">INQUIRE</a>
+    <button id="product-buy" style="display:flex; align-items:center; justify-content:center; padding:18px 24px; font-family:var(--ss-font-primary); font-size:13px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ss-black); background:var(--ss-pink); border:none; border-radius:0; cursor:pointer; transition:all 0.3s ease;" onmouseover="this.style.background='var(--ss-black)';this.style.color='var(--ss-pink)'" onmouseout="this.style.background='var(--ss-pink)';this.style.color='var(--ss-black)'">IN DEN WARENKORB</button>
+    <a id="product-checkout" href="/checkout" style="display:none; align-items:center; justify-content:center; text-decoration:none; padding:14px 24px; margin-top:8px; font-family:var(--ss-font-primary); font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ss-pink); background:var(--ss-black); border:1px solid var(--ss-pink); cursor:pointer; transition:all 0.3s ease;">ZUM CHECKOUT &rarr;</a>
     <div id="product-more" style="margin-top:auto; padding-top:48px;">
       <p style="font-size:10px; letter-spacing:0.3em; text-transform:uppercase; font-weight:700; color:rgba(0,0,0,0.3); margin:0 0 16px 0;">MORE WORKS</p>
       <div id="product-suggestions" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;"></div>
@@ -972,7 +973,7 @@ function fillSuggestions(currentIdx) {
       document.getElementById('product-title').textContent = p.title;
       document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
       document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
-      document.getElementById('product-buy').href = `/products/${p.handle}`;
+      document.getElementById('product-buy').dataset.handle = p.handle;
       fillSuggestions(i);
       document.getElementById('product-info').scrollTop = 0;
     });
@@ -1259,9 +1260,11 @@ renderer.domElement.addEventListener('touchend', (e) => {
           document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
           document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
           document.getElementById('product-series').textContent = 'Oil, Acrylic & Mixed Media on Canvas';
-          document.getElementById('product-buy').href = `/products/${p.handle}`;
+          document.getElementById('product-buy').dataset.handle = p.handle;
           fillSuggestions(idx);
           document.getElementById('product-img').alt = p.title;
+          resetCartButton();
+          trackViewItem(p);
           productModal.style.display = 'flex';
           document.getElementById('product-close').focus();
           return;
@@ -1533,9 +1536,11 @@ document.addEventListener('click', () => {
     document.getElementById('product-dims').textContent = `${p.w} \u00d7 ${p.h} cm`;
     document.getElementById('product-series').textContent = 'Oil, Acrylic & Mixed Media on Canvas';
     document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
-    document.getElementById('product-buy').href = `/products/${p.handle}`;
+    document.getElementById('product-buy').dataset.handle = p.handle;
     document.getElementById('product-img').alt = p.title;
     fillSuggestions(hoveredPainting);
+    resetCartButton();
+    trackViewItem(p);
     productModal.style.display = 'flex';
     document.getElementById('product-close').focus();
   }
@@ -1635,6 +1640,7 @@ let switching = false;
 function switchRoom(target) {
   if (target === currentRoom) return;
   if (switching) return;
+  trackRoomChange(target);
 
   // Sub Rosa — separate page, fade + redirect
   if (target === 'subrosa') {
@@ -1913,15 +1919,31 @@ function saveCookieConsent(consent) {
 function applyConsent(consent) {
   if (!consent) return;
 
-  if (consent.analytics) {
-    // Analytics scripts hier einfügen wenn bereit, z.B.:
-    // loadScript('https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX');
+  if (consent.analytics && !window._ssAnalyticsLoaded) {
+    window._ssAnalyticsLoaded = true;
+    // GTM — replace GTM-XXXXXXX with your container ID
+    const gtmId = 'GTM-XXXXXXX';
+    if (gtmId !== 'GTM-XXXXXXX') {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      loadScript('https://www.googletagmanager.com/gtm.js?id=' + gtmId);
+    }
     console.log('[Consent] Analytics: erlaubt');
   }
 
-  if (consent.marketing) {
-    // Marketing scripts hier einfügen wenn bereit, z.B.:
-    // loadScript('https://connect.facebook.net/en_US/fbevents.js');
+  if (consent.marketing && !window._ssMarketingLoaded) {
+    window._ssMarketingLoaded = true;
+    // Meta Pixel — replace PIXEL_ID with your pixel ID
+    const pixelId = 'PIXEL_ID';
+    if (pixelId !== 'PIXEL_ID') {
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+      (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', pixelId);
+      fbq('track', 'PageView');
+    }
     console.log('[Consent] Marketing: erlaubt');
   }
 }
@@ -1931,6 +1953,59 @@ function loadScript(src) {
   s.src = src;
   s.async = true;
   document.head.appendChild(s);
+}
+
+// === AJAX Cart ===
+const buyBtn = document.getElementById('product-buy');
+const checkoutLink = document.getElementById('product-checkout');
+
+buyBtn.addEventListener('click', async () => {
+  const handle = buyBtn.dataset.handle;
+  if (!handle) return;
+  buyBtn.textContent = '...';
+  buyBtn.disabled = true;
+  try {
+    const res = await fetch(`/products/${handle}.js`);
+    const product = await res.json();
+    const variantId = product.variants[0].id;
+    await fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] })
+    });
+    buyBtn.textContent = 'HINZUGEFÜGT ✓';
+    checkoutLink.style.display = 'flex';
+    if (window.dataLayer) {
+      window.dataLayer.push({ event: 'add_to_cart', ecommerce: {
+        items: [{ item_name: product.title, price: product.price / 100, currency: 'EUR' }]
+      }});
+    }
+  } catch (e) {
+    buyBtn.textContent = 'FEHLER — NOCHMAL';
+    buyBtn.disabled = false;
+  }
+});
+
+// Reset cart button state when opening a new product
+function resetCartButton() {
+  buyBtn.textContent = 'IN DEN WARENKORB';
+  buyBtn.disabled = false;
+  checkoutLink.style.display = 'none';
+}
+
+// E-Commerce Tracking
+function trackViewItem(painting) {
+  if (!window.dataLayer) return;
+  window.dataLayer.push({ ecommerce: null }); // clear
+  window.dataLayer.push({ event: 'view_item', ecommerce: {
+    items: [{ item_name: painting.title, price: Number(painting.price), currency: 'EUR',
+      item_category: 'Painting', item_variant: `${painting.w}x${painting.h}cm` }]
+  }});
+}
+
+function trackRoomChange(room) {
+  if (!window.dataLayer) return;
+  window.dataLayer.push({ event: 'room_change', room_name: room });
 }
 
 // Show banner if no consent stored, otherwise apply saved consent

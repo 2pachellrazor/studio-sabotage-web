@@ -1,7 +1,21 @@
-/* Studio Sabotage Design Tokens v2.1 — Single Source of Truth
+/* Studio Sabotage Design Tokens v2.2 — Single Source of Truth
    Prefix: --ss-
-   Quelle: tokens.json v2.1.0 (2026-03-23) + Surface Hierarchy + Context Colors
-   Geladen in blank.liquid als erstes Stylesheet */
+   Geladen in blank.liquid + theme.liquid als erstes Stylesheet */
+
+@font-face {
+  font-family: 'Nimbus Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('NimbusSans-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Nimbus Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('NimbusSans-Bold.woff2') format('woff2');
+}
 
 :root {
   /* Brand Colors */

@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="{{ 'tokens.css' | asset_url }}">
+  <link rel="stylesheet" href="{{ 'components-header.css' | asset_url }}">
+  <link rel="stylesheet" href="{{ 'components-footer.css' | asset_url }}">
   {{ content_for_header }}
 </head>
-<body style="background:#000;margin:0;padding:0;">
+<body style="background:var(--ss-black);margin:0;padding:0;">
   {{ content_for_layout }}
 </body>
 </html>

@@ -19,7 +19,7 @@ canvas { display: block; }
 }
 #overlay.hidden { opacity: 0; pointer-events: none; }
 #overlay h1 {
-  font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  font-family: var(--ss-font-primary);
   font-size: 2.5rem; letter-spacing: 0.4em; text-transform: uppercase;
   font-weight: 400;
   color: var(--ss-neon); text-shadow: 0 0 30px rgba(var(--ss-neon-rgb),0.5);

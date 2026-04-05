@@ -1,6 +1,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { background: #000000 !important; }
-  body { overflow: hidden; background: #000000 !important; font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; cursor: auto; }
+  html { background: var(--ss-black) !important; }
+  body { overflow: hidden; background: var(--ss-black) !important; font-family: var(--ss-font-primary); cursor: auto; }
   canvas { display: block; touch-action: none; }
 
   #loading {
@@ -26,7 +26,7 @@
   #loading.fade-enter::after {
     content: '';
     position: absolute; inset: 0;
-    background: #000000;
+    background: var(--ss-black);
     animation: blackFlash 0.7s ease-in-out forwards;
     z-index: 10;
   }
@@ -61,7 +61,7 @@
   }
   #overlay.hidden { opacity: 0; pointer-events: none; }
   #overlay .resume-text {
-    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-family: var(--ss-font-primary);
     color: rgba(var(--ss-black-rgb), 0.7); font-size: 2rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -109,7 +109,7 @@
   }
   #painting-info.visible { opacity: 1; }
   #painting-info .title {
-    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-family: var(--ss-font-primary);
     color: rgba(var(--ss-black-rgb), 0.85); font-size: 1.2rem;
     letter-spacing: 0.05em;
     text-shadow: 0 0 12px rgba(var(--ss-white-rgb), 0.8), 0 0 24px rgba(var(--ss-white-rgb), 0.4);
@@ -143,7 +143,7 @@
   #flat-world-btn {
     background: none; border: 1px solid rgba(var(--ss-black-rgb), 0.15); color: rgba(var(--ss-black-rgb), 0.4);
     font-size: 0.95rem; width: 26px; height: 26px; cursor: pointer;
-    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-family: var(--ss-font-primary);
     transition: all 0.2s ease; pointer-events: auto; display: none;
     line-height: 1; padding: 0;
   }
@@ -192,7 +192,7 @@
     z-index: 45; pointer-events: none;
     font-size: 0.7rem; color: rgba(var(--ss-black-rgb), 0.6);
     letter-spacing: 0.1em; text-transform: uppercase;
-    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-family: var(--ss-font-primary);
     text-shadow: 0 0 12px rgba(var(--ss-white-rgb), 0.8), 0 0 24px rgba(var(--ss-white-rgb), 0.4);
     opacity: 0; transition: opacity 0.2s;
   }
@@ -225,7 +225,7 @@
     margin-bottom: 6px;
   }
   #info-panel .panel-title {
-    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-family: var(--ss-font-primary);
     font-size: 1.4rem; font-weight: 400;
     color: rgba(var(--ss-black-rgb), 0.85);
     line-height: 1.3;
@@ -283,13 +283,13 @@
     line-height: 1.9; color: rgba(var(--ss-black-rgb), 0.7);
   }
   .legal-content h1 {
-    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-family: var(--ss-font-primary);
     font-size: 1.6rem; font-weight: 400;
     color: rgba(var(--ss-black-rgb), 0.85); margin-bottom: 2rem;
     letter-spacing: 0.1em;
   }
   .legal-content h2 {
-    font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-family: var(--ss-font-primary);
     font-size: 1rem; font-weight: 400;
     color: rgba(var(--ss-black-rgb), 0.85); margin: 2rem 0 0.5rem;
     letter-spacing: 0.05em;
@@ -316,7 +316,7 @@
   #grid-view {
     display: none; position: fixed; inset: 0; z-index: 150;
     background: #ffffff; overflow-y: auto;
-    font-family: 'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif;
+    font-family: var(--ss-font-primary);
   }
   #grid-view.visible { display: block; }
 

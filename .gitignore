@@ -38,3 +38,4 @@ build/
 *.log
 npm-debug.log*
 shopify-theme/assets/manufactory.glb
+shopify-theme/assets/manufactory-original.glb

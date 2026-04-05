@@ -78,21 +78,21 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
     </a>
   </nav>
-  <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to top, rgba(255,62,142,0.16) 0%, transparent 70%); pointer-events:none;"></div>
-  <div style="position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg, transparent, rgba(255,62,142,0.3), transparent);"></div>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:100%; background:linear-gradient(to top, rgba(var(--ss-neon-rgb),0.16) 0%, transparent 70%); pointer-events:none;"></div>
+  <div style="position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg, transparent, rgba(var(--ss-neon-rgb),0.3), transparent);"></div>
 </div>
 
 <!-- Loading screen -->
 <div id="loading">
   <div style="display:flex; flex-direction:column; align-items:center; position:relative; z-index:2;">
     <p style="color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:0.7rem; letter-spacing:0.25em; text-transform:uppercase; margin-bottom:1.2rem;">Studio Sabotage</p>
-    <p id="cta-line" style="color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:2rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.25s ease; text-align:center; border:1px solid rgba(255,62,142,0.4); padding:0.8rem 2.5rem; line-height:1.2; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); background:rgba(255,62,142,0.05); box-shadow:0 0 20px rgba(255,62,142,0.08); display:none;">Enter my Bedroom</p>
+    <p id="cta-line" style="color:rgba(0,0,0,0.85); font-family:'Nimbus Sans','Helvetica Neue','Helvetica','Arial',sans-serif; font-size:2rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.25s ease; text-align:center; border:1px solid rgba(var(--ss-neon-rgb),0.4); padding:0.8rem 2.5rem; line-height:1.2; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); background:rgba(var(--ss-neon-rgb),0.05); box-shadow:0 0 20px rgba(var(--ss-neon-rgb),0.08); display:none;">Enter my Bedroom</p>
   </div>
   <div class="bar-track"><div class="bar-fill" id="load-bar"></div></div>
   <div class="status" id="load-status">initialisiere...</div>
 </div>
 
-<a href="#page-footer" class="skip-nav" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:8px 16px;background:#FF3E8E;color:#fff;font-family:'Nimbus Sans',sans-serif;font-size:0.85rem;text-decoration:none;" onfocus="this.style.cssText='position:fixed;left:16px;top:16px;width:auto;height:auto;overflow:visible;z-index:9999;padding:8px 16px;background:#FF3E8E;color:#fff;font-family:Nimbus Sans,sans-serif;font-size:0.85rem;text-decoration:none;'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;'">Zum Inhalt springen</a>
+<a href="#page-footer" class="skip-nav" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:8px 16px;background:var(--ss-neon);color:#fff;font-family:'Nimbus Sans',sans-serif;font-size:0.85rem;text-decoration:none;" onfocus="this.style.cssText='position:fixed;left:16px;top:16px;width:auto;height:auto;overflow:visible;z-index:9999;padding:8px 16px;background:var(--ss-neon);color:#fff;font-family:Nimbus Sans,sans-serif;font-size:0.85rem;text-decoration:none;'" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;'">Zum Inhalt springen</a>
 
 <!-- Resume overlay -->
 <div id="overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Szene pausiert">
@@ -104,7 +104,7 @@
 
 <!-- Controls hint -->
 <div id="controls-hint" style="display:none;">
-  <span style="color:rgba(255,62,142,0.7); font-size:0.85rem; font-family:monospace; letter-spacing:0.12em; text-transform:uppercase;">WASD move &middot; Click hotspot to read &middot; ESC exit</span>
+  <span style="color:rgba(var(--ss-neon-rgb),0.7); font-size:0.85rem; font-family:monospace; letter-spacing:0.12em; text-transform:uppercase;">WASD move &middot; Click hotspot to read &middot; ESC exit</span>
 </div>
 
 <!-- Hotspot Hover Hint -->

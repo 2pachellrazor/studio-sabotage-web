@@ -1712,7 +1712,7 @@ function switchRoom(target) {
       // Bedroom entry hint
       const bedroomHint = document.createElement('div');
       bedroomHint.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:100; text-align:center; pointer-events:none; opacity:0; transition: opacity 0.8s ease;';
-      bedroomHint.innerHTML = '<div style="font-family:\'Nimbus Sans\',\'Helvetica Neue\',\'Helvetica\',\'Arial\',sans-serif; color:#FF3E8E; font-size:1.1rem; letter-spacing:0.15em; text-transform:uppercase; text-shadow: 0 0 20px rgba(255,62,142,0.5);">Nimm Platz. Schau dich um.<br><span style="font-size:0.75rem; opacity:0.7; letter-spacing:0.2em;">Nicht wundern — ist nicht aufgeräumt.</span></div>';
+      bedroomHint.innerHTML = '<div style="font-family:var(--ss-font-primary); color:var(--ss-neon); font-size:1.1rem; letter-spacing:0.15em; text-transform:uppercase; text-shadow: 0 0 20px rgba(var(--ss-neon-rgb),0.5);">Nimm Platz. Schau dich um.<br><span style="font-size:0.75rem; opacity:0.7; letter-spacing:0.2em;">Nicht wundern — ist nicht aufgeräumt.</span></div>';
       document.body.appendChild(bedroomHint);
       requestAnimationFrame(() => { bedroomHint.style.opacity = '1'; });
       setTimeout(() => { bedroomHint.style.opacity = '0'; }, 3000);
@@ -1806,7 +1806,7 @@ flatWorldBtn.addEventListener('click', (e) => {
 });
 
 const debugEl = document.createElement('div');
-debugEl.style.cssText = 'display:none; position:fixed; bottom:70px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:#FF3E8E; background:rgba(255,255,255,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(255,62,142,0.3);';
+debugEl.style.cssText = 'display:none; position:fixed; bottom:70px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:var(--ss-neon); background:rgba(255,255,255,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(var(--ss-neon-rgb),0.3);';
 document.body.appendChild(debugEl);
 
 const debugTarget = document.createElement('div');

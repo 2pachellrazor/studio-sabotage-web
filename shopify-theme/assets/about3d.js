@@ -240,14 +240,14 @@ function finishLoading() {
 
   // CTA hover
   ctaLine.addEventListener('mouseenter', () => {
-    ctaLine.style.background = 'rgba(255,62,142,0.15)';
-    ctaLine.style.borderColor = 'rgba(255,62,142,0.5)';
-    ctaLine.style.boxShadow = '0 0 30px rgba(255,62,142,0.2)';
+    ctaLine.style.background = 'rgba(var(--ss-neon-rgb),0.15)';
+    ctaLine.style.borderColor = 'rgba(var(--ss-neon-rgb),0.5)';
+    ctaLine.style.boxShadow = '0 0 30px rgba(var(--ss-neon-rgb),0.2)';
   });
   ctaLine.addEventListener('mouseleave', () => {
-    ctaLine.style.background = 'rgba(255,62,142,0.05)';
-    ctaLine.style.borderColor = 'rgba(255,62,142,0.4)';
-    ctaLine.style.boxShadow = '0 0 20px rgba(255,62,142,0.08)';
+    ctaLine.style.background = 'rgba(var(--ss-neon-rgb),0.05)';
+    ctaLine.style.borderColor = 'rgba(var(--ss-neon-rgb),0.4)';
+    ctaLine.style.boxShadow = '0 0 20px rgba(var(--ss-neon-rgb),0.08)';
   });
 
   // Create hotspot interaction spheres
@@ -607,7 +607,7 @@ window.addEventListener('resize', () => {
 
 // ─── Debug: Position Display (press P to toggle) ────────────────────
 const debugEl = document.createElement('div');
-debugEl.style.cssText = 'display:none; position:fixed; bottom:70px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:#FF3E8E; background:rgba(245,245,240,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(255,62,142,0.3);';
+debugEl.style.cssText = 'display:none; position:fixed; bottom:70px; left:16px; z-index:200; font-family:monospace; font-size:0.7rem; color:var(--ss-neon); background:rgba(245,245,240,0.9); padding:6px 12px; border-radius:3px; pointer-events:none; border:1px solid rgba(var(--ss-neon-rgb),0.3);';
 document.body.appendChild(debugEl);
 
 const debugTarget = document.createElement('div');

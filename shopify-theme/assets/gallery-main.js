@@ -921,13 +921,16 @@ easterEggModal.addEventListener('click', () => {
 
 const productModal = document.createElement('div');
 productModal.id = 'product-modal';
+productModal.setAttribute('role', 'dialog');
+productModal.setAttribute('aria-modal', 'true');
+productModal.setAttribute('aria-labelledby', 'product-title');
 productModal.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:99999; background:var(--ss-black); flex-direction:row;';
 productModal.innerHTML = `
   <div id="product-img-wrap" style="width:60%; height:100%; background:var(--ss-surface-2); display:flex; align-items:center; justify-content:center; overflow:hidden;">
-    <img id="product-img" style="width:100%; height:100%; object-fit:cover; display:block;" />
+    <img id="product-img" style="width:100%; height:100%; object-fit:cover; display:block;" alt="" />
   </div>
   <div id="product-info" style="width:40%; height:100%; background:var(--ss-beige); padding:48px; display:flex; flex-direction:column; justify-content:flex-start; overflow-y:auto; font-family:var(--ss-font-primary); color:var(--ss-on-surface);">
-    <button id="product-close" style="display:inline-flex; align-items:center; gap:8px; background:none; border:none; color:var(--ss-on-surface-muted); font-family:var(--ss-font-primary); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; padding:0; margin-bottom:48px; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='1'">\u2190 Return to Gallery</button>
+    <button id="product-close" aria-label="Zurück zur Galerie" style="display:inline-flex; align-items:center; gap:8px; background:none; border:none; color:var(--ss-on-surface-muted); font-family:var(--ss-font-primary); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; padding:0; margin-bottom:48px; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.5'" onmouseout="this.style.opacity='1'">\u2190 Return to Gallery</button>
     <h2 id="product-title" style="margin:0 0 8px 0; font-size:36px; font-weight:800; letter-spacing:-0.01em; text-transform:uppercase; line-height:1.1;"></h2>
     <p id="product-series" style="margin:0 0 40px 0; font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ss-on-surface-muted);"></p>
     <div id="product-meta" style="display:flex; flex-direction:column; gap:16px; margin-bottom:40px;">
@@ -1257,7 +1260,9 @@ renderer.domElement.addEventListener('touchend', (e) => {
           document.getElementById('product-series').textContent = 'Oil, Acrylic & Mixed Media on Canvas';
           document.getElementById('product-buy').href = `/products/${p.handle}`;
           fillSuggestions(idx);
+          document.getElementById('product-img').alt = p.title;
           productModal.style.display = 'flex';
+          document.getElementById('product-close').focus();
           return;
         }
       }
@@ -1528,8 +1533,10 @@ document.addEventListener('click', () => {
     document.getElementById('product-series').textContent = 'Oil, Acrylic & Mixed Media on Canvas';
     document.getElementById('product-price').textContent = `EUR ${Number(p.price).toLocaleString('de-DE')}`;
     document.getElementById('product-buy').href = `/products/${p.handle}`;
+    document.getElementById('product-img').alt = p.title;
     fillSuggestions(hoveredPainting);
     productModal.style.display = 'flex';
+    document.getElementById('product-close').focus();
   }
 
   if (currentRoom === 'bedroom' && hoveredHotspot >= 0) {

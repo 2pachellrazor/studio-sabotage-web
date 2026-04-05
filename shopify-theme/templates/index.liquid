@@ -15,14 +15,14 @@
 <link rel="canonical" href="https://studiosabotage.com">
 <link rel="stylesheet" href="{{ 'landing.css' | asset_url }}">
 
-<canvas id="particleBg"></canvas>
-<div id="vignette"></div>
+<canvas id="particleBg" aria-hidden="true"></canvas>
+<div id="vignette" aria-hidden="true"></div>
 
-<div id="content">
+<div id="content" role="main">
   <div id="brand-block">
     <p id="brand-name">Studio Sabotage</p>
     <canvas id="logo3d" width="380" height="632"></canvas>
-    <img id="tag-img" src="{{ 'tag.png' | asset_url }}" alt="tag">
+    <img id="tag-img" src="{{ 'tag.png' | asset_url }}" alt="Studio Sabotage Tag">
   </div>
   <p id="parental-advisory">Parental Advisory — Explicit Content</p>
   <a id="cta" href="/pages/gallery">Enter Anyway</a>

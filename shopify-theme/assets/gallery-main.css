@@ -1,6 +1,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { background: #000000 !important; }
-  body { overflow: hidden; background: #000000 !important; font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; cursor: url('cursor-snake.svg') 16 2, auto; }
+  body { overflow: hidden; background: #000000 !important; font-family: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; cursor: auto; }
   canvas { display: block; touch-action: none; }
 
   #loading {

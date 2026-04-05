@@ -3,7 +3,7 @@
   body {
     background: var(--ss-black) !important;
     font-family: var(--ss-font-primary);
-    cursor: url('cursor-snake.svg') 16 2, auto;
+    cursor: auto;
   }
 
   #particleBg {

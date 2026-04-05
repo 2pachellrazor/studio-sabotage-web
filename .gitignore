@@ -12,6 +12,9 @@ vault3d/*.glb
 Thumbs.db
 Desktop.ini
 
+# Claude Code worktrees
+.claude/worktrees/
+
 # IDE / Editor
 .vscode/
 .idea/

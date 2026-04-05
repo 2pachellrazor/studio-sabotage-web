@@ -170,7 +170,8 @@ let heroActive = false;
 let heroProgress = 0;
 const HERO_DURATION = 2.5; // seconds
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const _isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const renderer = new THREE.WebGLRenderer({ antialias: !_isTouch, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -1820,7 +1821,14 @@ const clock = new THREE.Clock();
 const _eeVec = new THREE.Vector3();       // reusable — avoid per-frame allocation
 const _heroLookTarget = new THREE.Vector3(); // reusable for hero camera
 
+let _animRunning = true;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { _animRunning = false; }
+  else { _animRunning = true; clock.getDelta(); requestAnimationFrame(animate); }
+});
+
 function animate() {
+  if (!_animRunning) return;
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.1);
 

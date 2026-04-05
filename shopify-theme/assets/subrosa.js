@@ -41,13 +41,13 @@ scene.fog = new THREE.FogExp2(0x050508, 0.03);
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 3, 0);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: !isTouchDevice, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 2.2;
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = !isTouchDevice;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
@@ -443,7 +443,14 @@ document.addEventListener('keydown', (e) => {
 
 // === ANIMATE ===
 let lastTime = performance.now();
+let _animRunning = true;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { _animRunning = false; }
+  else { _animRunning = true; lastTime = performance.now(); requestAnimationFrame(animate); }
+});
+
 function animate() {
+  if (!_animRunning) return;
   requestAnimationFrame(animate);
   const now = performance.now();
   const dt = Math.min((now - lastTime) / 1000, 0.1);

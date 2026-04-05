@@ -105,9 +105,10 @@ scene.background = new THREE.Color(0x0a0a0a);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.05, 100);
 camera.position.set(0, 1.7, 0);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const _isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const renderer = new THREE.WebGLRenderer({ antialias: !_isTouch, powerPreference: 'high-performance' });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, _isTouch ? 1.5 : 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 2.4;
 document.body.appendChild(renderer.domElement);
@@ -627,8 +628,14 @@ targetRaycaster.far = 20;
 
 // ─── Animation Loop ──────────────────────────────────────────────────
 const clock = new THREE.Clock();
+let _animRunning = true;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { _animRunning = false; }
+  else { _animRunning = true; clock.getDelta(); requestAnimationFrame(animate); }
+});
 
 function animate() {
+  if (!_animRunning) return;
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.1);
 

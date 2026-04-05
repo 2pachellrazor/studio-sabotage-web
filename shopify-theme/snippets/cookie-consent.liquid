@@ -1,0 +1,52 @@
+<link rel="stylesheet" href="{{ 'consent.css' | asset_url }}">
+
+<div id="cookie-banner" role="dialog" aria-label="Cookie-Einstellungen">
+  <div class="cookie-text">
+    Ich verwende Cookies auf meiner Website, um zu verstehen, wie du diese nutzt. Indem du auf „Zustimmen" klickst, stimmst du deren Verwendung zu. Ich würde dir allerdings empfehlen auf "Alle ablehnen" zu klicken und dich über die Verwendung deiner Daten im Internet zu informieren. <a href="#" id="cookie-ds-link">Datenschutzerklärung</a>
+  </div>
+  <div class="cookie-buttons">
+    <button class="cookie-btn-settings" id="cookie-open-settings">Einstellungen</button>
+    <button class="cookie-btn-reject" id="cookie-reject">Alle ablehnen</button>
+    <button class="cookie-btn-accept" id="cookie-accept">Zustimmen</button>
+  </div>
+  <button class="cookie-close" id="cookie-close" aria-label="Cookie-Banner schließen">&times;</button>
+</div>
+
+<div id="cookie-settings" role="dialog" aria-label="Cookie-Einstellungen">
+  <div class="settings-card">
+    <h2>Cookie-Einstellungen</h2>
+    <div class="cookie-option">
+      <label>
+        <strong>Technisch notwendig</strong>
+        <div class="option-desc">Warenkorb, Session, Sicherheit. Ohne die geht nichts.</div>
+      </label>
+      <div class="cookie-toggle">
+        <input type="checkbox" checked disabled>
+        <span class="slider"></span>
+      </div>
+    </div>
+    <div class="cookie-option">
+      <label>
+        <strong>Analyse</strong>
+        <div class="option-desc">Hilft mir zu verstehen, wie Besucher die Seite nutzen.</div>
+      </label>
+      <div class="cookie-toggle">
+        <input type="checkbox" id="cookie-analytics">
+        <span class="slider"></span>
+      </div>
+    </div>
+    <div class="cookie-option">
+      <label>
+        <strong>Marketing</strong>
+        <div class="option-desc">Instagram, Meta — um dir relevante Inhalte zu zeigen.</div>
+      </label>
+      <div class="cookie-toggle">
+        <input type="checkbox" id="cookie-marketing">
+        <span class="slider"></span>
+      </div>
+    </div>
+    <button class="settings-save" id="cookie-save-settings">Einstellungen speichern</button>
+  </div>
+</div>
+
+<script src="{{ 'consent.js' | asset_url }}" defer></script>

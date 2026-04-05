@@ -1901,56 +1901,7 @@ function animate() {
 
 animate();
 
-// Cookie banner
-const cookieBanner = document.getElementById('cookie-banner');
-const cookieSettings = document.getElementById('cookie-settings');
-
-function getCookieConsent() {
-  try { return JSON.parse(localStorage.getItem('cookie-consent')); } catch { return null; }
-}
-
-function saveCookieConsent(consent) {
-  localStorage.setItem('cookie-consent', JSON.stringify(consent));
-  cookieBanner.classList.add('hidden');
-  cookieSettings.classList.remove('visible');
-  applyConsent(consent);
-}
-
-function applyConsent(consent) {
-  if (!consent) return;
-
-  if (consent.analytics && !window._ssAnalyticsLoaded) {
-    window._ssAnalyticsLoaded = true;
-    // GTM Container — verwaltet GA4, Meta Pixel, etc.
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
-    loadScript('https://www.googletagmanager.com/gtm.js?id=GTM-MGCNGSVV');
-    console.log('[Consent] Analytics: erlaubt');
-  }
-
-  if (consent.marketing && !window._ssMarketingLoaded) {
-    window._ssMarketingLoaded = true;
-    // Meta Pixel — replace PIXEL_ID with your pixel ID
-    const pixelId = 'PIXEL_ID';
-    if (pixelId !== 'PIXEL_ID') {
-      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
-      (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', pixelId);
-      fbq('track', 'PageView');
-    }
-    console.log('[Consent] Marketing: erlaubt');
-  }
-}
-
-function loadScript(src) {
-  const s = document.createElement('script');
-  s.src = src;
-  s.async = true;
-  document.head.appendChild(s);
-}
+// Cookie banner + consent now handled by assets/consent.js (shared across pages)
 
 // === AJAX Cart ===
 const buyBtn = document.getElementById('product-buy');
@@ -2004,49 +1955,6 @@ function trackRoomChange(room) {
   if (!window.dataLayer) return;
   window.dataLayer.push({ event: 'room_change', room_name: room });
 }
-
-// Show banner if no consent stored, otherwise apply saved consent
-const savedConsent = getCookieConsent();
-if (!savedConsent) {
-  cookieBanner.style.display = 'flex';
-} else {
-  cookieBanner.classList.add('hidden');
-  applyConsent(savedConsent);
-}
-
-document.getElementById('cookie-accept').addEventListener('click', () => {
-  saveCookieConsent({ necessary: true, analytics: true, marketing: true });
-});
-
-document.getElementById('cookie-reject').addEventListener('click', () => {
-  saveCookieConsent({ necessary: true, analytics: false, marketing: false });
-});
-
-document.getElementById('cookie-close').addEventListener('click', () => {
-  saveCookieConsent({ necessary: true, analytics: false, marketing: false });
-});
-
-document.getElementById('cookie-open-settings').addEventListener('click', () => {
-  cookieSettings.classList.add('visible');
-});
-
-document.getElementById('cookie-save-settings').addEventListener('click', () => {
-  saveCookieConsent({
-    necessary: true,
-    analytics: document.getElementById('cookie-analytics').checked,
-    marketing: document.getElementById('cookie-marketing').checked
-  });
-});
-
-cookieSettings.addEventListener('click', (e) => {
-  if (e.target === cookieSettings) cookieSettings.classList.remove('visible');
-});
-
-document.getElementById('cookie-ds-link').addEventListener('click', (e) => {
-  e.preventDefault();
-  cookieBanner.classList.add('hidden');
-  openLegal('datenschutz');
-});
 
 // Legal overlays
 function openLegal(id) {
@@ -2110,13 +2018,14 @@ document.getElementById('link-agb').addEventListener('click', (e) => {
 document.getElementById('link-cookie-settings').addEventListener('click', (e) => {
   e.preventDefault();
   closeLegal('impressum');
-  // Restore previous consent into toggles
-  const prev = getCookieConsent();
+  // Restore previous consent into toggles (consent logic lives in consent.js)
+  let prev = null;
+  try { prev = JSON.parse(localStorage.getItem('cookie-consent')); } catch {}
   if (prev) {
     document.getElementById('cookie-analytics').checked = prev.analytics || false;
     document.getElementById('cookie-marketing').checked = prev.marketing || false;
   }
-  cookieSettings.classList.add('visible');
+  document.getElementById('cookie-settings').classList.add('visible');
 });
 
 // Expose state for footer visibility script (gallery-main-config.js)

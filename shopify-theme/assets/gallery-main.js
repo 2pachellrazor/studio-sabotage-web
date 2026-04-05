@@ -1921,12 +1921,10 @@ function applyConsent(consent) {
 
   if (consent.analytics && !window._ssAnalyticsLoaded) {
     window._ssAnalyticsLoaded = true;
-    // GA4 via gtag.js
+    // GTM Container — verwaltet GA4, Meta Pixel, etc.
     window.dataLayer = window.dataLayer || [];
-    function gtag(){window.dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-N4W63Q3W4P');
-    loadScript('https://www.googletagmanager.com/gtag/js?id=G-N4W63Q3W4P');
+    window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+    loadScript('https://www.googletagmanager.com/gtm.js?id=GTM-MGCNGSVV');
     console.log('[Consent] Analytics: erlaubt');
   }
 

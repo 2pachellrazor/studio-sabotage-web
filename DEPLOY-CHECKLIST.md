@@ -17,7 +17,7 @@ Store: `0u99wg-s5.myshopify.com` | Theme-ID: `198214746454`
 
 ### Console & Debug
 - [ ] Keine ungewollten `console.log` / `console.warn` / `debugger` Statements?
-      Bekannte Ausnahmen: `gallery-main.js` Zeilen 1904/1910 (Consent-Logs -- gewollt)
+      Bekannte Ausnahmen: `consent.js` (Consent-Logs "[Consent] Analytics/Marketing: erlaubt" -- gewollt)
 - [ ] P-Key Debug-Overlay in `subrosa.js` -- startet hidden (OK)
 - [ ] P-Key Debug-Overlay in `about3d.js` -- startet hidden (OK)
 - [ ] P-Key Debug-Overlay in `gallery-main.js` -- startet hidden (OK)
@@ -38,7 +38,7 @@ Store: `0u99wg-s5.myshopify.com` | Theme-ID: `198214746454`
 ## 3. THREE.JS / 3D-SPEZIFISCH
 
 ### GLB-Dateien
-- [ ] `manufactory.glb` (~35 MB) liegt auf Shopify CDN (ist gitignored)?
+- [ ] `manufactory.glb` (~3.4 MB, Draco-komprimiert von 35MB) liegt auf Shopify CDN?
 - [ ] `room.glb` -- Referenz ueber `window.SS_ASSETS.roomGlb`?
 - [ ] `gallery.glb` -- Referenz ueber `window.SS_ASSETS.galleryGlb`?
 - [ ] Keine lokalen Dateipfade zu GLBs im JS-Code?
@@ -64,9 +64,16 @@ Store: `0u99wg-s5.myshopify.com` | Theme-ID: `198214746454`
 - [ ] Gallery: Impressum-Overlay oeffnet per `data-legal="impressum"`
 - [ ] Sub Rosa: Impressum-Link verweist auf `/pages/gallery#impressum`
 - [ ] About: Impressum-Link verweist auf `/pages/gallery#impressum`
-- [ ] ACHTUNG: Landing hat KEINEN Impressum-Link -- gewollt?
-- [ ] Datenschutz-Overlay erreichbar?
+- [ ] Landing: Impressum-Link im Footer verweist auf `/pages/gallery#impressum`
+- [ ] Datenschutz-Link im Cookie-Banner oeffnet Overlay (Gallery) oder navigiert zu `/pages/gallery#datenschutz` (andere Seiten)
 - [ ] AGB-Overlay erreichbar?
+
+### Cookie-Banner & Analytics (alle 4 Seiten)
+- [ ] Cookie-Banner erscheint auf Landing, Gallery, Sub Rosa, About (via `snippets/cookie-consent.liquid`)
+- [ ] "Zustimmen" laedt GTM Container `GTM-MGCNGSVV` (consent-gated)
+- [ ] "Alle ablehnen" blockiert GTM-Load
+- [ ] GA4 Mess-ID `G-N4W63Q3W4P` laeuft durch GTM (Tag "GA4 - Studio Sabotage")
+- [ ] Shopify's built-in Cookie-Banner ist deaktiviert
 
 ### Footer
 - [ ] Copyright-Jahr aktuell (2026)?
@@ -120,9 +127,16 @@ git push origin v1.X.X
 |-------|----------|----|-----|-----|
 | Landing | `index.liquid` | `landing.js` | `landing.css` | -- |
 | Gallery | `page.gallery.liquid` | `gallery-main.js` | `gallery-main.css` | `gallery.glb` |
-| Sub Rosa | `page.gallery3d.liquid` | `subrosa.js` | `subrosa.css` | `manufactory.glb` |
+| Sub Rosa | `page.gallery3d.liquid` | `subrosa.js` | `subrosa.css` | `manufactory.glb` (~3.4 MB, Draco) |
 | About | `page.about3d.liquid` | `about3d.js` | `about3d.css` | `room.glb` |
+
+**Shared Components (auf allen 4 Seiten):**
+- `snippets/cookie-consent.liquid` -> `consent.js` + `consent.css` (GTM `GTM-MGCNGSVV`)
+- `assets/components-header.css` (Header)
+- `assets/components-footer.css` (Footer)
+- `assets/tokens.css` (Design-Tokens: Farben, Typography, z-index-Skala, @font-face)
 
 **Repo:** `2pachellrazor/studio-sabotage-web` (Branch: `main`)
 **Store:** `0u99wg-s5.myshopify.com`
 **Theme-ID:** `198214746454`
+**GTM Container:** `GTM-MGCNGSVV` | **GA4 Mess-ID:** `G-N4W63Q3W4P`

@@ -7,7 +7,7 @@ canvas { display: block; }
 
 /* ─── Loading Screen ─── */
 #loading {
-  position: fixed; inset: 0; z-index: 200;
+  position: fixed; inset: 0; z-index: var(--ss-z-loading);
   background: var(--ss-off-white);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
@@ -49,7 +49,7 @@ canvas { display: block; }
 
 /* ─── Resume Overlay ─── */
 #overlay {
-  position: fixed; inset: 0; z-index: 150;
+  position: fixed; inset: 0; z-index: var(--ss-z-about-overlay);
   background: rgba(var(--ss-off-white-rgb), 0.6);
   backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
@@ -78,7 +78,7 @@ canvas { display: block; }
 #crosshair {
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 50; pointer-events: none; display: none;
+  z-index: var(--ss-z-overlay); pointer-events: none; display: none;
 }
 #crosshair::before, #crosshair::after {
   content: ''; position: absolute;
@@ -102,13 +102,13 @@ canvas { display: block; }
 #controls-hint {
   position: fixed; bottom: 28px; left: 50%;
   transform: translateX(-50%);
-  z-index: 50; pointer-events: none;
+  z-index: var(--ss-z-overlay); pointer-events: none;
   display: none; text-align: center;
 }
 
 /* ─── Hotspot Marker ─── */
 .hotspot-marker {
-  position: absolute; z-index: 40;
+  position: absolute; z-index: var(--ss-z-crosshair);
   width: 32px; height: 32px;
   pointer-events: none;
   transform: translate(-50%, -50%);
@@ -148,7 +148,7 @@ canvas { display: block; }
 #hotspot-hint {
   position: fixed; top: 55%; left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 45; pointer-events: none;
+  z-index: var(--ss-z-hint); pointer-events: none;
   font-size: 0.7rem; color: rgba(var(--ss-black-rgb), 0.6);
   letter-spacing: 0.1em; text-transform: uppercase;
   font-family: monospace;
@@ -159,7 +159,7 @@ canvas { display: block; }
 
 /* ─── Info Panel ─── */
 #info-panel {
-  position: fixed; z-index: 100;
+  position: fixed; z-index: var(--ss-z-panel);
   top: 50%; right: 40px;
   transform: translateY(-50%);
   width: 380px; max-height: 80vh;

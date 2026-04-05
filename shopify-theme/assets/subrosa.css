@@ -10,7 +10,7 @@ canvas { display: block; }
 
 /* Overlay */
 #overlay {
-  position: fixed; inset: 0; z-index: 50;
+  position: fixed; inset: 0; z-index: var(--ss-z-overlay);
   background: rgba(5,5,8,0.9);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
@@ -53,7 +53,7 @@ canvas { display: block; }
 /* Info */
 #info {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-  z-index: 15; text-align: center; pointer-events: none;
+  z-index: var(--ss-z-3d-ui); text-align: center; pointer-events: none;
   font-size: 0.85rem; letter-spacing: 0.15em; text-transform: uppercase;
   color: rgba(var(--ss-white-rgb), 0.6);
   transition: opacity 0.3s ease;
@@ -64,7 +64,7 @@ canvas { display: block; }
 /* Controls hint — above footer */
 #controls-hint {
   position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%);
-  z-index: 15; text-align: center; pointer-events: none;
+  z-index: var(--ss-z-3d-ui); text-align: center; pointer-events: none;
   font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
   color: rgba(var(--ss-neon-rgb),0.5);
 }

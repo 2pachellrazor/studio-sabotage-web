@@ -1,6 +1,6 @@
 #cookie-banner {
   position: fixed; bottom: 0; left: 0; width: 100%;
-  z-index: 99997;
+  z-index: calc(var(--ss-z-legal) - 1);
   background: linear-gradient(to top, rgba(var(--ss-black-rgb), 0.95), rgba(var(--ss-black-rgb), 0.88));
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid rgba(var(--ss-pink-rgb),0.25);
@@ -53,7 +53,7 @@
 #cookie-banner .cookie-close:hover { color: rgba(var(--ss-white-rgb), 0.7); }
 
 #cookie-settings {
-  display: none; position: fixed; inset: 0; z-index: 99998;
+  display: none; position: fixed; inset: 0; z-index: var(--ss-z-legal);
   background: rgba(var(--ss-black-rgb), 0.9);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   justify-content: center; align-items: center;

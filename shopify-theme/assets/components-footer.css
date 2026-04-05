@@ -3,7 +3,7 @@
 
 #page-footer {
   --_ft-rgb: var(--ss-footer-color-rgb, 0, 0, 0);
-  position: fixed; bottom: 0; left: 0; width: 100%; z-index: 210;
+  position: fixed; bottom: 0; left: 0; width: 100%; z-index: var(--ss-z-footer);
   padding: 12px 24px; text-align: center;
   font-family: var(--ss-font-primary);
   font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;

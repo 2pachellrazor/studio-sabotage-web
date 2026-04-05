@@ -3,7 +3,7 @@
 
 #gallery-header {
   --_hdr-bg: var(--ss-header-bg-rgb, 255, 255, 255);
-  position: fixed; top: 0; left: 0; width: 100%; z-index: 160;
+  position: fixed; top: 0; left: 0; width: 100%; z-index: var(--ss-z-header);
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 36px;
   background: linear-gradient(to bottom, rgba(var(--_hdr-bg), 0.7) 0%, rgba(var(--_hdr-bg), 0.2) 60%, transparent 100%);

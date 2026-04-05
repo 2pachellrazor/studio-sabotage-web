@@ -4,7 +4,7 @@
   canvas { display: block; touch-action: none; }
 
   #loading {
-    position: fixed; inset: 0; z-index: 100;
+    position: fixed; inset: 0; z-index: var(--ss-z-panel);
     background: #ffffff;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -52,7 +52,7 @@
   }
 
   #overlay {
-    position: fixed; inset: 0; z-index: 50;
+    position: fixed; inset: 0; z-index: var(--ss-z-overlay);
     background: rgba(var(--ss-white-rgb), 0.6);
     backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -82,7 +82,7 @@
   #crosshair {
     position: fixed; top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 40; pointer-events: none;
+    z-index: var(--ss-z-crosshair); pointer-events: none;
   }
   #crosshair::before, #crosshair::after {
     content: ''; position: absolute;
@@ -103,7 +103,7 @@
   #painting-info {
     position: fixed; bottom: 80px; left: 50%;
     transform: translateX(-50%);
-    z-index: 40; pointer-events: none;
+    z-index: var(--ss-z-crosshair); pointer-events: none;
     text-align: center;
     opacity: 0; transition: opacity 0.25s ease;
   }
@@ -150,7 +150,7 @@
   #flat-world-btn:hover { color: rgba(var(--ss-black-rgb), 0.85); border-color: rgba(var(--ss-black-rgb), 0.3); }
 
   .hotspot-marker {
-    position: absolute; z-index: 40;
+    position: absolute; z-index: var(--ss-z-crosshair);
     width: 32px; height: 32px;
     pointer-events: none;
     transform: translate(-50%, -50%);
@@ -189,7 +189,7 @@
   #hotspot-hint {
     position: fixed; top: 55%; left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 45; pointer-events: none;
+    z-index: var(--ss-z-hint); pointer-events: none;
     font-size: 0.7rem; color: rgba(var(--ss-black-rgb), 0.6);
     letter-spacing: 0.1em; text-transform: uppercase;
     font-family: var(--ss-font-primary);
@@ -199,7 +199,7 @@
   #hotspot-hint.visible { opacity: 1; }
 
   #info-panel {
-    position: fixed; z-index: 100;
+    position: fixed; z-index: var(--ss-z-panel);
     top: 50%; right: 40px;
     transform: translateY(-50%);
     width: 380px; max-height: 80vh;
@@ -270,7 +270,7 @@
   }
 
   .legal-overlay {
-    display: none; position: fixed; inset: 0; z-index: 99998;
+    display: none; position: fixed; inset: 0; z-index: var(--ss-z-legal);
     background: rgba(var(--ss-white-rgb), 0.95);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     overflow-y: auto;
@@ -296,7 +296,7 @@
   }
   .legal-content p { margin-bottom: 0.8rem; }
   .legal-close {
-    position: fixed; top: 20px; right: 24px; z-index: 99999;
+    position: fixed; top: 20px; right: 24px; z-index: var(--ss-z-cookie);
     background: rgba(var(--ss-pink-rgb),0.05); border: 1px solid rgba(var(--ss-pink-rgb),0.4);
     color: rgba(var(--ss-black-rgb), 0.6); font-size: 1.2rem;
     cursor: pointer; width: 36px; height: 36px; border-radius: 4px;
@@ -314,7 +314,7 @@
 
   /* ─── 2D Grid Fallback ─── */
   #grid-view {
-    display: none; position: fixed; inset: 0; z-index: 150;
+    display: none; position: fixed; inset: 0; z-index: var(--ss-z-about-overlay);
     background: #ffffff; overflow-y: auto;
     font-family: var(--ss-font-primary);
   }

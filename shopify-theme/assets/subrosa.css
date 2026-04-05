@@ -70,7 +70,8 @@ canvas { display: block; }
 }
 
 /* Footer: see components-footer.css (sub rosa uses white text on dark bg) */
-#page-footer { --ss-footer-color-rgb: 255, 255, 255; }
+#page-footer { --ss-footer-color-rgb: 255, 255, 255; z-index: 155; color: rgba(255, 255, 255, 0.35); }
+#page-footer a { color: rgba(255, 255, 255, 0.35); }
 
 canvas { touch-action: none; }
 

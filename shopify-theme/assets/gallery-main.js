@@ -1921,13 +1921,12 @@ function applyConsent(consent) {
 
   if (consent.analytics && !window._ssAnalyticsLoaded) {
     window._ssAnalyticsLoaded = true;
-    // GTM — replace GTM-XXXXXXX with your container ID
-    const gtmId = 'GTM-XXXXXXX';
-    if (gtmId !== 'GTM-XXXXXXX') {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      loadScript('https://www.googletagmanager.com/gtm.js?id=' + gtmId);
-    }
+    // GA4 via gtag.js
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){window.dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4W63Q3W4P');
+    loadScript('https://www.googletagmanager.com/gtag/js?id=G-N4W63Q3W4P');
     console.log('[Consent] Analytics: erlaubt');
   }
 

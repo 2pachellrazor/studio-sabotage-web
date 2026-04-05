@@ -34,17 +34,30 @@
 
   /* Context Colors */
   --ss-off-white: #f5f5f0;
+  --ss-off-white-rgb: 245, 245, 240;
   --ss-off-black: #0a0a0a;
   --ss-deep-black: #050508;
 
-  /* Surface Hierarchy */
-  --ss-surface-0: #fef9f1;
-  --ss-surface-1: #f8f3eb;
+  /* Surface Hierarchy (used in Product Modal + Footer) */
   --ss-surface-2: #ede7e0;
-  --ss-surface-dim: #ded9d2;
   --ss-on-surface: #1d1b17;
   --ss-on-surface-muted: #474747;
-  --ss-ghost-border: rgba(199,199,199,0.1);
+
+  /* z-index Scale */
+  --ss-z-base: 1;
+  --ss-z-3d-ui: 15;
+  --ss-z-crosshair: 40;
+  --ss-z-hint: 45;
+  --ss-z-overlay: 50;
+  --ss-z-panel: 100;
+  --ss-z-about-overlay: 150;
+  --ss-z-header: 160;
+  --ss-z-loading: 200;
+  --ss-z-footer: 210;
+  --ss-z-transition: 250;
+  --ss-z-modal: 1000;
+  --ss-z-legal: 99998;
+  --ss-z-cookie: 99999;
 
   /* Typography */
   --ss-font-primary: 'Nimbus Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;

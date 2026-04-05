@@ -12,7 +12,7 @@
 
   #vignette {
     position: absolute; inset: 0; z-index: 2; pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(var(--ss-black-rgb), 0.7) 100%);
   }
 
   #content {
@@ -52,7 +52,7 @@
   }
 
   #parental-advisory {
-    color: rgba(255,255,255,0.5);
+    color: rgba(var(--ss-white-rgb), 0.5);
     font-size: 0.7rem;
     letter-spacing: 0.25em;
     text-transform: uppercase;
@@ -62,7 +62,7 @@
   }
 
   #cta {
-    color: rgba(255,255,255,0.85);
+    color: rgba(var(--ss-white-rgb), 0.85);
     font-family: var(--ss-font-primary);
     font-size: 2rem;
     letter-spacing: 0.1em;
@@ -100,9 +100,9 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  #footer span { color: rgba(255,255,255,0.3); }
+  #footer span { color: rgba(var(--ss-white-rgb), 0.3); }
   #footer a {
-    color: rgba(255,255,255,0.3);
+    color: rgba(var(--ss-white-rgb), 0.3);
     text-decoration: none;
     transition: color 0.2s;
   }
